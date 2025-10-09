@@ -1,73 +1,103 @@
-# React + TypeScript + Vite
+---
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+##  **Frontend README — `bundle-maker/frontend/README.md`**
 
-Currently, two official plugins are available:
+```markdown
+#  Frontend — React + Tailwind + TypeScript
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Frontend for **Bundle Maker**, providing all user-facing pages for browsing products, creating bundles, and managing submissions.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+##  Tech Stack
+- React + TypeScript  
+- Tailwind CSS  
+- Zustand (state management)  
+- React Router DOM  
+- React Hook Form  
+- Axios  
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+##  Setup Instructions
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```bash
+cd frontend
+npm install
+npm run dev
+App runs at:
+ http://localhost:5173
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+ Environment Variables
+Create .env in /frontend:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+VITE_API_URL=http://localhost:5000/api
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Folder Structure
+bash
+Copy code
+src/
+├── main.tsx
+├── App.tsx
+│
+├── components/
+│   ├── Header.tsx         # Logo, Catalog, Bundle Maker, Account
+│   ├── Footer.tsx         # Contact and policy links
+│   ├── ProductCard.tsx    # Product display card
+│   ├── BundleSidebar.tsx  # Live bundle view
+│   ├── ProtectedRoute.tsx # Auth guard for private pages
+│
+├── layouts/
+│   ├── MainLayout.tsx     # Header + Footer layout
+│   └── AdminLayout.tsx    # Admin dashboard layout
+│
+├── pages/
+│   ├── Auth/
+│   │   ├── Login.tsx
+│   │   ├── Signup.tsx
+│   │   └── ForgotPassword.tsx
+│   │
+│   ├── Landing/
+│   │   └── Catalog.tsx    # Product browsing page
+│   │
+│   ├── User/
+│   │   └── Dashboard.tsx  # Profile, bundles, submissions
+│   │
+│   ├── BundleMaker/
+│   │   ├── CreateBundle.tsx
+│   │   └── ReviewSubmit.tsx
+│   │
+│   └── Admin/
+│       └── AdminPanel.tsx  # Manage bundles/products/users
+│
+├── routes/
+│   └── AppRoutes.tsx       # Defines routes with role protection
+│
+├── store/
+│   └── useStore.ts         # Zustand global state
+│
+├── utils/
+│   └── api.ts              # Axios base instance
+│
+└── types/
+    └── index.ts            # Shared interfaces
+### Key Pages
+Page	Description
+/login, /signup	Authentication
+/catalog	Browse and add products
+/bundle/create	Create new bundle
+/bundle/review	Review & submit bundle
+/dashboard	User profile and bundles
+/admin	Admin panel
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Scripts
+Command	Description
+npm run dev	Run development server
+npm run build	Build production
+npm run preview	Preview build
+
+### Notes
+Uses Tailwind for UI layout.
+
+All API requests use VITE_API_URL.
