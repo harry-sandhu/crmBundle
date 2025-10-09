@@ -35,8 +35,7 @@ Create .env in /frontend:
 VITE_API_URL=http://localhost:5000/api
 
 ## Folder Structure
-bash
-Copy code
+
 src/
 ├── main.tsx
 ├── App.tsx
@@ -81,7 +80,7 @@ src/
 │   └── api.ts              # Axios base instance
 │
 └── types/
-    └── index.ts            # Shared interfaces
+    └── sharedInterface.ts            # Shared interfaces
 ### Key Pages
 Page	Description
 /login, /signup	Authentication
