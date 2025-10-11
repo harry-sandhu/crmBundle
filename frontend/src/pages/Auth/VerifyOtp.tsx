@@ -1,27 +1,31 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../../utils/api";
-import { getApiErrorMessage } from "../../utils/handleApiError";
+import { getApiErrorMessage } from "../../utils/handleApiError"; // ✅ helper we'll add below
 
-interface ForgotPasswordResponse {
+interface ApiResponse {
   success: boolean;
   message: string;
 }
 
-export default function ForgotPassword() {
+export default function VerifyOtp() {
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
+  // ✅ Verify OTP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMsg("");
     setErr("");
-
     try {
-      const res = await axios.post<ForgotPasswordResponse>("/auth/forgot-password", { email });
-      setMsg(res.data.message || "Password reset instructions sent to your email");
+      const res = await axios.post<ApiResponse>("/auth/verify-otp", { email, code });
+      setMsg(res.data.message || "Email verified successfully!");
+      setTimeout(() => navigate("/"), 1500);
     } catch (error) {
       setErr(getApiErrorMessage(error));
     } finally {
@@ -29,10 +33,25 @@ export default function ForgotPassword() {
     }
   };
 
+  // ✅ Resend OTP
+  const handleResendOtp = async () => {
+    if (!email) {
+      setErr("Enter your email first");
+      return;
+    }
+    setErr("");
+    setMsg("");
+    try {
+      const res = await axios.post<ApiResponse>("/otp/send", { email });
+      setMsg(res.data.message || "OTP resent successfully!");
+    } catch (error) {
+      setErr(getApiErrorMessage(error));
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-green-100">
       <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-2xl p-10 border border-green-100">
-        {/* Header */}
         <div className="mb-6 flex flex-col items-center">
           <img
             src="/finallogo.jpg"
@@ -40,14 +59,14 @@ export default function ForgotPassword() {
             className="h-20 w-20 mb-3 rounded-full shadow-md bg-white/90 border-4 border-white"
           />
           <h1 className="text-3xl font-extrabold text-green-800 mb-1">
-            Forgot Password
+            Verify Email
           </h1>
-          <p className="text-green-900 mb-2 text-center font-medium">
-            Enter your email to receive password reset instructions.
+          <p className="text-green-900 text-center font-medium">
+            Enter the OTP sent to your email.
           </p>
         </div>
 
-        {/* Form */}
+        {/* ✅ OTP Form */}
         <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
           <input
             type="email"
@@ -57,12 +76,20 @@ export default function ForgotPassword() {
             placeholder="Email"
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
           />
+          <input
+            type="text"
+            required
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="6-digit OTP"
+            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition tracking-widest text-center"
+            maxLength={6}
+          />
 
-          {/* ✅ Status Messages */}
-          {msg && <div className="text-green-600 text-center font-medium">{msg}</div>}
+          {/* ✅ Feedback messages */}
+          {msg && <div className="text-green-500 text-center font-medium">{msg}</div>}
           {err && <div className="text-red-500 text-center font-medium">{err}</div>}
 
-          {/* ✅ Submit Button */}
           <button
             disabled={loading}
             type="submit"
@@ -72,15 +99,24 @@ export default function ForgotPassword() {
                 : "bg-gradient-to-r from-yellow-400 via-orange-400 to-green-500 hover:from-orange-400 hover:to-green-600 text-white"
             }`}
           >
-            {loading ? "Sending..." : "Send Reset Instructions"}
+            {loading ? "Verifying..." : "Verify Email"}
           </button>
         </form>
 
-        {/* ✅ Optional Footer */}
-        <div className="text-center mt-4 text-sm">
-          <a href="/" className="text-green-700 hover:underline font-medium">
+        {/* ✅ Actions */}
+        <div className="flex justify-between mt-4 text-sm">
+          <button
+            onClick={handleResendOtp}
+            className="text-green-700 hover:underline font-medium"
+          >
+            Resend OTP
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            className="text-green-700 hover:underline font-medium"
+          >
             Back to Login
-          </a>
+          </button>
         </div>
       </div>
     </div>

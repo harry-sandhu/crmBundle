@@ -1,27 +1,28 @@
+// backend/src/utils/sendEmail.ts
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-export default {
-  async sendVerificationEmail(email: string, name: string, token: string) {
-    const url = `${process.env.FRONTEND_URL}/verify-email/${token}`;
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Verify your email",
-      html: `<p>Hello ${name}, Verify your email: <a href="${url}">${url}</a></p>`
-    });
-  },
-  async sendPasswordResetEmail(email: string, name: string, token: string) {
-    const url = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Reset your password",
-      html: `<p>Hello ${name}, Reset your password here: <a href="${url}">${url}</a></p>`
-    });
-  }
+export const sendOtpEmail = async (email: string, otp: string) => {
+  await transporter.sendMail({
+    from: `"Bundle Maker" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Your verification code",
+    html: `<p>Your verification OTP is <b>${otp}</b>. It expires in 5 minutes.</p>`,
+  });
+};
+
+export const sendPasswordResetEmail = async (email: string, link: string) => {
+  await transporter.sendMail({
+    from: `"Bundle Maker" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Reset your password",
+    html: `<p>Reset your password using this link: <a href="${link}">${link}</a></p>`,
+  });
 };

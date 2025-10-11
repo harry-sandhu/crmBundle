@@ -1,0 +1,29 @@
+import { Link, useNavigate } from "react-router-dom";
+
+export default function Header() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
+
+  return (
+    <header className="flex justify-between items-center p-4 bg-green-600 text-white shadow-md">
+      <div className="flex items-center gap-3">
+        <img src="/finallogo.jpg" alt="Logo" className="h-10 w-10 rounded-full" />
+        <h1 className="text-xl font-bold">BundleMaker</h1>
+      </div>
+
+      <nav className="flex items-center gap-6">
+        <Link to="/catalog" className="hover:text-yellow-300">Catalog</Link>
+        <Link to="/bundle/create" className="hover:text-yellow-300">Bundle Maker</Link>
+        <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
+        <button onClick={handleLogout} className="bg-yellow-400 text-green-900 px-3 py-1 rounded-md hover:bg-yellow-300">
+          Logout
+        </button>
+      </nav>
+    </header>
+  );
+}
