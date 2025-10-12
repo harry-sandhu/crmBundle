@@ -1,5 +1,5 @@
 // =======================================================
-// 🌱 Environment Setup (must be first import!)
+// 🌱 Environment Setup (must be first!)
 import "./config/env";
 // =======================================================
 
@@ -8,53 +8,41 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import connectDB from "./config/db";
 
-// ✅ Initialize Express app
+// ✅ Initialize Express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // =======================================================
-// 🔒 CORS Configuration
+// 🌍 CORS (Allow Everything)
 // =======================================================
-const allowedOrigins = [
-  "http://localhost:5173",                // ✅ Local frontend (development)
-  "https://crm-bundle.vercel.app",        // ✅ Backend domain itself
-  "https://crm-bundle-frontend.vercel.app" // ✅ (optional) Future deployed frontend
-];
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Allow Postman / server-to-server
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn("🚫 CORS blocked request from:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
+    origin: "*", // ✅ Allow all origins
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// Handle preflight requests
+app.options("*", cors());
+
 // =======================================================
-// ⚙️ Middleware
+// 🧩 Middleware
 // =======================================================
 app.use(express.json());
 
-// ✅ Connect to MongoDB
+// ✅ Connect MongoDB
 connectDB();
 
-// ✅ Root test route
+// ✅ Test Route
 app.get("/", (req: Request, res: Response) => {
-  res.send("✅ Server is running successfully (TypeScript Edition)!");
+  res.send("✅ Server is running successfully (CORS: Allow All)");
 });
 
 // ✅ Routes
 app.use("/auth", authRoutes);
 
-// ✅ Start server
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server started at http://localhost:${PORT}`);
   console.log("📧 Email loaded from:", process.env.EMAIL_USER || "❌ Missing");
