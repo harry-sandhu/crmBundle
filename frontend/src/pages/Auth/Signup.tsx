@@ -17,6 +17,9 @@ interface SignupResponse {
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [referenceId, setReferenceId] = useState("");
+  const [registrationAmount, setRegistrationAmount] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "admin">("user");
   const [err, setErr] = useState("");
@@ -34,18 +37,23 @@ export default function Signup() {
       const res = await axios.post<SignupResponse>("/auth/signup", {
         name,
         email,
+        mobile,
+        referenceId,
+        registrationAmount,
         password,
         role,
       });
 
       if (res.data.success) {
-        // ✅ Store necessary info for OTP verification
         localStorage.setItem(
           "pendingSignup",
           JSON.stringify({
             email: res.data.data?.email || email,
             name,
             role,
+            mobile,
+            referenceId,
+            registrationAmount,
             hashedPassword: res.data.data?.hashedPassword,
           })
         );
@@ -68,7 +76,7 @@ export default function Signup() {
         {/* Header Section */}
         <div className="mb-6 flex flex-col items-center">
           <img
-            src="/finallogo.jpg"
+            src="../../../public/finallogo.png"
             alt="Logo"
             className="h-20 w-20 mb-3 rounded-full shadow-md bg-white/90 border-4 border-white"
           />
@@ -99,6 +107,28 @@ export default function Signup() {
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
           />
           <input
+            type="tel"
+            required
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            placeholder="Mobile Number"
+            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+          />
+          <input
+            type="text"
+            value={referenceId}
+            onChange={(e) => setReferenceId(e.target.value)}
+            placeholder="Reference ID (optional)"
+            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+          />
+          <input
+            type="number"
+            value={registrationAmount}
+            onChange={(e) => setRegistrationAmount(e.target.value)}
+            placeholder="Registration Amount"
+            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+          />
+          <input
             type="password"
             required
             value={password}
@@ -118,8 +148,12 @@ export default function Signup() {
           </select>
 
           {/* Feedback messages */}
-          {msg && <div className="text-green-600 text-center font-medium">{msg}</div>}
-          {err && <div className="text-red-500 text-center font-medium">{err}</div>}
+          {msg && (
+            <div className="text-green-600 text-center font-medium">{msg}</div>
+          )}
+          {err && (
+            <div className="text-red-500 text-center font-medium">{err}</div>
+          )}
 
           {/* Submit Button */}
           <button

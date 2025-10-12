@@ -13,7 +13,7 @@ export default function Header() {
     <header className="flex justify-between items-center p-4 bg-green-600 text-white shadow-md">
       <div className="flex items-center gap-3">
         <img src="../../finallogo.png" alt="Logo" className="h-10 w-10 rounded-full" />
-        <h1 className="text-xl font-bold">BundleMaker</h1>
+        <h1 className="text-xl font-bold">GrowLifeSuprimo</h1>
       </div>
 
       <nav className="flex items-center gap-6">

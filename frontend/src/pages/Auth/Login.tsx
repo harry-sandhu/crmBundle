@@ -77,10 +77,10 @@ setTimeout(() => {
             Welcome Back!
           </h2>
           <p className="text-green-900 text-base text-center px-6 opacity-90">
-            Log in to build your dream bundles with the fresh spirit of a new day.
+            Log in to build your dream products with the fresh spirit of a new day.
           </p>
           <div className="absolute bottom-4 left-0 w-full text-center text-green-800 opacity-80 text-xs">
-            © {new Date().getFullYear()} BundleMaker
+            © {new Date().getFullYear()} GrowLifeSuprimo
           </div>
         </div>
 
