@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../utils/api";
-import { getApiErrorMessage } from "../../utils/handleApiError"; // ✅ helper we'll add below
+import { getApiErrorMessage } from "../../utils/handleApiError";
 
 interface ApiResponse {
   success: boolean;
@@ -16,16 +16,46 @@ export default function VerifyOtp() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Auto-fill email if stored from signup
+  useEffect(() => {
+    const stored = localStorage.getItem("pendingSignup");
+    if (stored) {
+      const { email } = JSON.parse(stored);
+      setEmail(email);
+    }
+  }, []);
+
   // ✅ Verify OTP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMsg("");
     setErr("");
+
     try {
-      const res = await axios.post<ApiResponse>("/auth/verify-otp", { email, code });
-      setMsg(res.data.message || "Email verified successfully!");
-      setTimeout(() => navigate("/"), 1500);
+      const stored = localStorage.getItem("pendingSignup");
+      if (!stored) {
+        setErr("Signup details missing. Please sign up again.");
+        return;
+      }
+
+      const { name, role, hashedPassword, email: storedEmail } = JSON.parse(stored);
+
+      const res = await axios.post<ApiResponse>("/auth/verify-otp", {
+        email: storedEmail,
+        code,
+        name,
+        hashedPassword,
+        role,
+      });
+
+      if (res.data.success) {
+        setMsg(res.data.message || "Email verified successfully!");
+        localStorage.removeItem("pendingSignup");
+        setTimeout(() => navigate("/"), 1500);
+      } else {
+        setErr(res.data.message || "Verification failed. Try again.");
+      }
     } catch (error) {
       setErr(getApiErrorMessage(error));
     } finally {
@@ -33,7 +63,7 @@ export default function VerifyOtp() {
     }
   };
 
-  // ✅ Resend OTP
+  // ✅ Resend OTP (optional)
   const handleResendOtp = async () => {
     if (!email) {
       setErr("Enter your email first");
@@ -66,7 +96,7 @@ export default function VerifyOtp() {
           </p>
         </div>
 
-        {/* ✅ OTP Form */}
+        {/* OTP Form */}
         <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
           <input
             type="email"
@@ -86,7 +116,6 @@ export default function VerifyOtp() {
             maxLength={6}
           />
 
-          {/* ✅ Feedback messages */}
           {msg && <div className="text-green-500 text-center font-medium">{msg}</div>}
           {err && <div className="text-red-500 text-center font-medium">{err}</div>}
 
@@ -103,7 +132,6 @@ export default function VerifyOtp() {
           </button>
         </form>
 
-        {/* ✅ Actions */}
         <div className="flex justify-between mt-4 text-sm">
           <button
             onClick={handleResendOtp}

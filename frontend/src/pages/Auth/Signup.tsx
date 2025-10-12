@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../../utils/api";
-import { getApiErrorMessage } from "../../utils/handleApiError"; // ✅ centralized error helper
+import { getApiErrorMessage } from "../../utils/handleApiError";
 
 interface SignupResponse {
   success: boolean;
   message: string;
   data?: {
     email: string;
+    name?: string;
     role: "user" | "admin";
+    hashedPassword?: string;
   };
 }
 
@@ -16,7 +18,7 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"user" | "admin">("user"); // ✅ Optional role selector
+  const [role, setRole] = useState<"user" | "admin">("user");
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,8 +38,23 @@ export default function Signup() {
         role,
       });
 
-      setMsg(res.data.message || "Signup successful! Please verify your email.");
-      setTimeout(() => navigate("/verify-otp"), 1500);
+      if (res.data.success) {
+        // ✅ Store necessary info for OTP verification
+        localStorage.setItem(
+          "pendingSignup",
+          JSON.stringify({
+            email: res.data.data?.email || email,
+            name,
+            role,
+            hashedPassword: res.data.data?.hashedPassword,
+          })
+        );
+
+        setMsg(res.data.message || "OTP sent! Please verify your email.");
+        setTimeout(() => navigate("/verify-otp"), 1500);
+      } else {
+        setErr(res.data.message || "Signup failed. Try again.");
+      }
     } catch (error) {
       setErr(getApiErrorMessage(error));
     } finally {
@@ -90,7 +107,7 @@ export default function Signup() {
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
           />
 
-          {/* ✅ Role Selector (Optional) */}
+          {/* ✅ Role Selector */}
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as "user" | "admin")}
@@ -100,11 +117,11 @@ export default function Signup() {
             <option value="admin">Admin</option>
           </select>
 
-          {/* ✅ Feedback messages */}
+          {/* Feedback messages */}
           {msg && <div className="text-green-600 text-center font-medium">{msg}</div>}
           {err && <div className="text-red-500 text-center font-medium">{err}</div>}
 
-          {/* ✅ Submit Button */}
+          {/* Submit Button */}
           <button
             disabled={loading}
             type="submit"
@@ -114,7 +131,7 @@ export default function Signup() {
                 : "bg-gradient-to-r from-yellow-400 via-orange-400 to-green-500 hover:from-orange-400 hover:to-green-600 text-white"
             }`}
           >
-            {loading ? "Signing up..." : "Sign Up"}
+            {loading ? "Sending OTP..." : "Sign Up"}
           </button>
         </form>
 

@@ -22,8 +22,8 @@ const jsonOk = (res: Response, data: any, message = "OK") =>
 const jsonErr = (res: Response, status = 400, message = "Error") =>
   res.status(status).json({ success: false, message });
 
-// ===========================
-// USER SIGNUP (reuses otpService)
+/// ===========================
+// USER SIGNUP (OTP-first flow)
 // ===========================
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -35,32 +35,66 @@ export const signup = async (req: Request, res: Response) => {
     const existing = await User.findOne({ email });
     if (existing) return jsonErr(res, 400, "User already exists");
 
-    const hashed = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-    const validRoles = ["user", "admin"];
-    const finalRole = validRoles.includes(role) ? role : "user";
-
-    const user = await User.create({
-      name,
-      email,
-      password: hashed,
-      role: finalRole,
-      isVerified: false,
-    });
-
-    
+    // Generate OTP before creating user
     const otpCode = await generateOtpForEmail(email);
     await sendOtpEmail(email, otpCode);
 
+    // Hash password but don't save user yet
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+
+    // Return hashed data temporarily to frontend (or you can store it server-side)
     return jsonOk(
       res,
-      { email: user.email, role: finalRole },
-      `Registration successful as ${finalRole}. OTP sent to email.`
+      {
+        email,
+        name,
+        hashedPassword,
+        role,
+      },
+      "OTP sent to email. Complete signup by verifying the OTP."
     );
   } catch (err) {
     console.error("Signup error:", err);
     return jsonErr(res, 500, "Signup failed");
   }
 };
+
+// ===========================
+// VERIFY OTP (Create user after OTP verification)
+// ===========================
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const { email, code, name, hashedPassword, role } = req.body;
+
+    if (!email || !code || !name || !hashedPassword)
+      return jsonErr(res, 400, "All fields are required (email, name, password, OTP)");
+
+    const isValid = await verifyOtpForEmail(email, code);
+    if (!isValid) return jsonErr(res, 400, "Invalid or expired OTP");
+
+    const validRoles = ["user", "admin"];
+    const finalRole = validRoles.includes(role) ? role : "user";
+
+    // Now create user only after OTP verification
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: finalRole,
+      isVerified: true,
+    });
+
+    return jsonOk(
+      res,
+      { email: user.email, role: user.role },
+      `Signup successful and verified as ${finalRole}`
+    );
+  } catch (err) {
+    console.error("Verify OTP error:", err);
+    return jsonErr(res, 500, "OTP verification failed");
+  }
+};
+
 
 // ===========================
 // USER LOGIN
@@ -105,26 +139,6 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// ===========================
-// VERIFY OTP (reuses otpService)
-// ===========================
-export const verifyOtp = async (req: Request, res: Response) => {
-  try {
-    const { email, code } = req.body;
-    if (!email || !code)
-      return jsonErr(res, 400, "Email and OTP code are required");
-
-    const isValid = await verifyOtpForEmail(email, code);
-    if (!isValid) return jsonErr(res, 400, "Invalid or expired OTP");
-
-    await User.updateOne({ email }, { $set: { isVerified: true } });
-
-    return jsonOk(res, null, "Email verified successfully");
-  } catch (err) {
-    console.error("Verify OTP error:", err);
-    return jsonErr(res, 500, "OTP verification failed");
-  }
-};
 
 // ===========================
 // FORGOT PASSWORD
