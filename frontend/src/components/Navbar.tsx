@@ -40,8 +40,8 @@ export default function Navbar({
         className="flex items-center gap-2 cursor-pointer"
         onClick={() => navigate("/catalog")}
       >
-        <img src="/finallogo.jpg" alt="Logo" className="h-10 w-10 rounded-full" />
-        <h1 className="text-lg font-extrabold text-green-700">BundleMaker</h1>
+        <img src="../../finallogo.png" alt="Logo" className="h-10 w-10 rounded-full" />
+        <h1 className="text-lg font-extrabold text-green-700">GrowLifeSuprimo</h1>
       </div>
 
       {/* Search Bar */}
@@ -112,6 +112,12 @@ export default function Navbar({
           className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 transition"
         >
           🛒 Bundle
+        </button>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 transition"
+        >
+          👨🏻‍💼Profile
         </button>
       </div>
     </header>

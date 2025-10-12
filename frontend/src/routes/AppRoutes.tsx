@@ -37,9 +37,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         >
-<Route path="/catalog" element={<Catalog />} />
-
-
+          <Route path="/catalog" element={<Catalog />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bundle/review" element={<ReviewSubmit />} />
         </Route>
