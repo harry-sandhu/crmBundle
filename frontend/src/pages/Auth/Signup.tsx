@@ -135,6 +135,7 @@ import axios from "../../utils/api";
 import { getApiErrorMessage } from "../../utils/handleApiError";
 
 interface SignupResponse {
+<<<<<<< HEAD
   success: boolean;
   message: string;
   data?: {
@@ -148,6 +149,27 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "admin">("user");
+=======
+  success: boolean;
+  message: string;
+  data?: {
+    email: string;
+    name?: string;
+    role: "user" | "admin";
+    hashedPassword?: string;
+  };
+}
+
+export default function Signup() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"user" | "admin">("user");
+  const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+>>>>>>> e723ae4e594e7fc04b32686a7521813449a323a4
 
   // New fields
   const [mobile, setMobile] = useState("");
@@ -160,11 +182,37 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+<<<<<<< HEAD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErr("");
     setMsg("");
+=======
+      if (res.data.success) {
+        // ✅ Store necessary info for OTP verification
+        localStorage.setItem(
+          "pendingSignup",
+          JSON.stringify({
+            email: res.data.data?.email || email,
+            name,
+            role,
+            hashedPassword: res.data.data?.hashedPassword,
+          })
+        );
+
+        setMsg(res.data.message || "OTP sent! Please verify your email.");
+        setTimeout(() => navigate("/verify-otp"), 1500);
+      } else {
+        setErr(res.data.message || "Signup failed. Try again.");
+      }
+    } catch (error) {
+      setErr(getApiErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+>>>>>>> e723ae4e594e7fc04b32686a7521813449a323a4
 
     try {
       const res = await axios.post<SignupResponse>("/auth/signup", {
@@ -187,6 +235,7 @@ export default function Signup() {
     }
   };
 
+<<<<<<< HEAD
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-green-100">
       <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-2xl p-10 border border-green-100">
@@ -270,6 +319,35 @@ export default function Signup() {
             <option value="user">User</option>
             <option value="admin">Admin</option>
           </select>
+=======
+          {/* ✅ Role Selector */}
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as "user" | "admin")}
+            className="block w-full px-4 py-3 rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition bg-white"
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          {/* Feedback messages */}
+          {msg && <div className="text-green-600 text-center font-medium">{msg}</div>}
+          {err && <div className="text-red-500 text-center font-medium">{err}</div>}
+
+          {/* Submit Button */}
+          <button
+            disabled={loading}
+            type="submit"
+            className={`w-full py-3 text-lg font-semibold rounded-lg shadow-lg transition ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-yellow-400 via-orange-400 to-green-500 hover:from-orange-400 hover:to-green-600 text-white"
+            }`}
+          >
+            {loading ? "Sending OTP..." : "Sign Up"}
+          </button>
+        </form>
+>>>>>>> e723ae4e594e7fc04b32686a7521813449a323a4
 
           {/* Feedback messages */}
           {msg && <div className="text-green-600 text-center font-medium">{msg}</div>}

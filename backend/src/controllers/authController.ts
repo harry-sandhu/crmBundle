@@ -22,45 +22,136 @@ const jsonOk = (res: Response, data: any, message = "OK") =>
 const jsonErr = (res: Response, status = 400, message = "Error") =>
   res.status(status).json({ success: false, message });
 
-// ===========================
-// USER SIGNUP (reuses otpService)
+/// ===========================
+// USER SIGNUP (OTP-first flow)
 // ===========================
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password)
-      return jsonErr(res, 400, "Name, email, and password are required");
+    console.log("📥 Incoming signup:", { name, email, role });
+
+    if (!name || !email || !password) {
+      console.warn("⚠️ Missing required fields");
+      return res.status(400).json({
+        success: false,
+        step: "validation",
+        message: "Name, email, and password are required",
+      });
+    }
 
     const existing = await User.findOne({ email });
-    if (existing) return jsonErr(res, 400, "User already exists");
+    if (existing) {
+      console.warn("⚠️ Duplicate signup attempt:", email);
+      return res.status(400).json({
+        success: false,
+        step: "duplicate-check",
+        message: "User already exists",
+      });
+    }
 
-    const hashed = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    console.log("✅ User does not exist. Generating OTP...");
+
+    let otpCode;
+    try {
+      otpCode = await generateOtpForEmail(email);
+      console.log("✅ OTP generated:", otpCode);
+    } catch (otpErr: any) {
+      console.error("❌ OTP generation failed:", otpErr.message);
+      return res.status(500).json({
+        success: false,
+        step: "otp-generation",
+        message: `Failed to generate OTP: ${otpErr.message}`,
+      });
+    }
+
+    try {
+      await sendOtpEmail(email, otpCode);
+      console.log("📧 OTP email sent to:", email);
+    } catch (emailErr: any) {
+      console.error("❌ Email send failed:", emailErr.message);
+      return res.status(500).json({
+        success: false,
+        step: "email-send",
+        message: `Failed to send OTP email: ${emailErr.message}`,
+        hint:
+          "Check if EMAIL_USER and EMAIL_PASS (App Password) are correct and less secure apps are disabled.",
+      });
+    }
+
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+      console.log("🔒 Password hashed successfully");
+    } catch (hashErr: any) {
+      console.error("❌ Password hashing failed:", hashErr.message);
+      return res.status(500).json({
+        success: false,
+        step: "password-hash",
+        message: `Failed to hash password: ${hashErr.message}`,
+      });
+    }
+
+    console.log("✅ Signup pre-verification complete for:", email);
+
+    return res.status(200).json({
+      success: true,
+      step: "otp-sent",
+      message: "OTP sent to email. Complete signup by verifying the OTP.",
+      debug: {
+        email,
+        role,
+        hashedPassword,
+      },
+    });
+  } catch (err: any) {
+    console.error("💥 Unexpected Signup Error:", err.message, err.stack);
+    return res.status(500).json({
+      success: false,
+      step: "unhandled",
+      message: `Signup crashed: ${err.message}`,
+      stack: err.stack,
+    });
+  }
+};
+
+
+// ===========================
+// VERIFY OTP (Create user after OTP verification)
+// ===========================
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const { email, code, name, hashedPassword, role } = req.body;
+
+    if (!email || !code || !name || !hashedPassword)
+      return jsonErr(res, 400, "All fields are required (email, name, password, OTP)");
+
+    const isValid = await verifyOtpForEmail(email, code);
+    if (!isValid) return jsonErr(res, 400, "Invalid or expired OTP");
+
     const validRoles = ["user", "admin"];
     const finalRole = validRoles.includes(role) ? role : "user";
 
+    // Now create user only after OTP verification
     const user = await User.create({
       name,
       email,
-      password: hashed,
+      password: hashedPassword,
       role: finalRole,
-      isVerified: false,
+      isVerified: true,
     });
-
-    
-    const otpCode = await generateOtpForEmail(email);
-    await sendOtpEmail(email, otpCode);
 
     return jsonOk(
       res,
-      { email: user.email, role: finalRole },
-      `Registration successful as ${finalRole}. OTP sent to email.`
+      { email: user.email, role: user.role },
+      `Signup successful and verified as ${finalRole}`
     );
   } catch (err) {
-    console.error("Signup error:", err);
-    return jsonErr(res, 500, "Signup failed");
+    console.error("Verify OTP error:", err);
+    return jsonErr(res, 500, "OTP verification failed");
   }
 };
+
 
 // ===========================
 // USER LOGIN
@@ -105,26 +196,6 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// ===========================
-// VERIFY OTP (reuses otpService)
-// ===========================
-export const verifyOtp = async (req: Request, res: Response) => {
-  try {
-    const { email, code } = req.body;
-    if (!email || !code)
-      return jsonErr(res, 400, "Email and OTP code are required");
-
-    const isValid = await verifyOtpForEmail(email, code);
-    if (!isValid) return jsonErr(res, 400, "Invalid or expired OTP");
-
-    await User.updateOne({ email }, { $set: { isVerified: true } });
-
-    return jsonOk(res, null, "Email verified successfully");
-  } catch (err) {
-    console.error("Verify OTP error:", err);
-    return jsonErr(res, 500, "OTP verification failed");
-  }
-};
 
 // ===========================
 // FORGOT PASSWORD
