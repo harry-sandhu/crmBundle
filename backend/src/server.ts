@@ -7,7 +7,8 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import connectDB from "./config/db";
-
+import dotenv from "dotenv";
+import AdminRoutes from "./routes/AdminRoutes";
 
 dotenv.config();
 const app = express();
@@ -56,7 +57,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // ✅ Routes
 app.use("/auth", authRoutes);
-app.use("/admin", adminRoutes);
+app.use("/admin", AdminRoutes);
 
 // ✅ Start Server
 app.listen(PORT, () => {
