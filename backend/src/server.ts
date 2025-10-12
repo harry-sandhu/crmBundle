@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // =======================================================
-// 🌍 CORS (Allow Everything)
+// 🌍 CORS (Allow Everything — Vercel-safe)
 // =======================================================
 app.use(
   cors({
@@ -23,8 +23,22 @@ app.use(
   })
 );
 
-// Handle preflight requests
-app.options("*", cors());
+// ✅ Handle preflight requests manually (no wildcards)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // =======================================================
 // 🧩 Middleware
@@ -36,7 +50,7 @@ connectDB();
 
 // ✅ Test Route
 app.get("/", (req: Request, res: Response) => {
-  res.send("✅ Server is running successfully (CORS: Allow All)");
+  res.send("✅ Server is running successfully (CORS: Allow All, Vercel-safe)");
 });
 
 // ✅ Routes
