@@ -12,17 +12,17 @@ export default function Header() {
   return (
     <header className="flex justify-between items-center p-4 bg-green-600 text-white shadow-md">
       <div className="flex items-center gap-3">
-        <img src="/finallogo.jpg" alt="Logo" className="h-10 w-10 rounded-full" />
+        <img src="../../finallogo.png" alt="Logo" className="h-10 w-10 rounded-full" />
         <h1 className="text-xl font-bold">BundleMaker</h1>
       </div>
 
       <nav className="flex items-center gap-6">
-        <Link to="/catalog" className="hover:text-yellow-300">Catalog</Link>
-        <Link to="/bundle/create" className="hover:text-yellow-300">Bundle Maker</Link>
-        <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
-        <button onClick={handleLogout} className="bg-yellow-400 text-green-900 px-3 py-1 rounded-md hover:bg-yellow-300">
+        <Link to="/contact" className="hover:text-yellow-300">Contact Us</Link>
+        <Link to="/Aboutus" className="hover:text-yellow-300">About Us</Link>
+        <Link to="/Vision" className="hover:text-yellow-300">Vision</Link>
+        {/* <button onClick={handleLogout} className="bg-yellow-400 text-green-900 px-3 py-1 rounded-md hover:bg-yellow-300">
           Logout
-        </button>
+        </button> */}
       </nav>
     </header>
   );

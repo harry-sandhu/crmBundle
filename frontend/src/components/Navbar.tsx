@@ -1,6 +1,7 @@
 // src/components/Navbar.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { sampleProducts } from "../data/sampleProducts";
 
 interface NavbarProps {
   onSearch: (term: string) => void;
@@ -29,6 +30,8 @@ export default function Navbar({
     const max = parseFloat(maxPrice) || 0;
     onPriceChange([min, max]);
   };
+  const categorySet = new Set(sampleProducts.map(p => p.category));
+  const categories = Array.from(categorySet);
 
   return (
     <header className="w-full bg-white shadow-md py-3 px-6 flex flex-wrap items-center justify-between">
@@ -60,7 +63,7 @@ export default function Navbar({
 
       {/* Filters */}
       <div className="flex items-center gap-3 text-sm">
-        <select
+        {/* <select
           value={category}
           onChange={(e) => {
             setCategory(e.target.value);
@@ -72,7 +75,20 @@ export default function Navbar({
           <option value="Fruits">Fruits</option>
           <option value="Vegetables">Vegetables</option>
           <option value="Grains">Grains</option>
-        </select>
+        </select> */}
+        <select
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            onCategoryChange(e.target.value);
+          }}
+          className="border border-green-300 rounded-md px-3 py-1 bg-white text-green-700"
+        >
+          <option value="">All Categories</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+    </select>
 
         <input
           type="number"
