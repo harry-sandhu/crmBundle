@@ -6,6 +6,7 @@ export default function Footer() {
         <a href="#">Contact</a>
         <a href="#">Privacy Policy</a>
         <a href="#">Terms</a>
+        <a href="#">About Us</a>
       </div>
     </footer>
   );
