@@ -8,7 +8,9 @@ export interface BundleItem {
   productId: string;
   title: string;
   qty: number;
-  price: number;
+  // price: number;
+   mrp: number;
+   dp: number;
 }
 
 export interface BundleState {
