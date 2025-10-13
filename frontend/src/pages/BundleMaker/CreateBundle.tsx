@@ -4,7 +4,7 @@ import { useBundleStore } from "../../store/useStore";
 
 export default function CreateBundle() {
   const navigate = useNavigate();
-  const { items, addItem, removeItem, notes, setNotes } = useBundleStore();
+  const { items,  notes, setNotes } = useBundleStore();
 
   const handleSubmit = () => {
     if (!items.length) return alert("Add at least one item to your bundle!");
