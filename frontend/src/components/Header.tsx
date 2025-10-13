@@ -1,13 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link,  } from "react-router-dom";
 
 export default function Header() {
-  const navigate = useNavigate();
+ 
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/");
-  };
+ 
+  
 
   return (
     <header className="flex justify-between items-center p-4 bg-green-600 text-white shadow-md">
