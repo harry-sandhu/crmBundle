@@ -1,3 +1,4 @@
+// frontend/src/pages/auth/Login.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../../utils/api";
@@ -13,6 +14,7 @@ interface LoginResponse {
       name: string;
       email: string;
       role: "user" | "admin";
+      refCode: string; // ✅ added
     };
   };
 }
@@ -37,39 +39,44 @@ export default function Login() {
         password,
       });
 
+      if (!res.data.success) {
+        setErr(res.data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+
       const { token, user } = res.data.data;
+
+      // ✅ Store the JWT token for authenticated requests
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+
+      // ✅ Store user info (including refCode)
+      localStorage.setItem(
+        "userInfo",
+        JSON.stringify({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          refCode: user.refCode, // 👈 this will be used by Dashboard & Tree
+        })
+      );
 
       setMsg("Login successful!");
 
-      // ✅ Redirect based on role
-      // ✅ Redirect based on role (fallback = user)
-//   setTimeout(() => {
-//   const userRole = user?.role?.toLowerCase?.() || "user";
+      // ✅ Role-based redirect (including SuperAdmin check)
+      setTimeout(() => {
+        const userRole = user.role?.toLowerCase() || "user";
+        const userEmail = user.email?.toLowerCase();
 
-//   if (userRole === "admin") {
-//     navigate("/admin", { replace: true });
-//   } else {
-//     navigate("/catalog", { replace: true });
-//   }
-// }, 1000);
-
-    setTimeout(() => {
-  const userRole = user?.role?.toLowerCase?.() || "user";
-  const userEmail = user?.email?.toLowerCase();
-
-  // Check for SuperAdmin email first
-  if (userEmail === "growlifesupremo2025@gmail.com" && userRole==="admin") {
-    navigate("/Superadmin", { replace: true });
-  } else if (userRole === "admin") {
-    navigate("/admin", { replace: true });
-  } else {
-    navigate("/catalog", { replace: true });
-  }
-}, 1000);
-
-
+        if (userEmail === "growlifesupremo2025@gmail.com" && userRole === "admin") {
+          navigate("/Superadmin", { replace: true });
+        } else if (userRole === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/catalog", { replace: true });
+        }
+      }, 1000);
     } catch (error) {
       setErr(getApiErrorMessage(error));
     } finally {
@@ -80,7 +87,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-yellow-50 to-green-100">
       <div className="flex w-full max-w-4xl shadow-2xl rounded-lg overflow-hidden bg-white">
-        {/* Left Side - Welcome Section */}
+        {/* Left Side */}
         <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-300 to-green-300 relative">
           <img
             src="/finallogo.png"
@@ -92,10 +99,10 @@ export default function Login() {
             Welcome Back!
           </h2>
           <p className="text-green-900 text-base text-center px-6 opacity-90">
-            Log in to build your dream products with the fresh spirit of a new day.
+            Log in to continue building your GroLife Supro Imo network.
           </p>
           <div className="absolute bottom-4 left-0 w-full text-center text-green-800 opacity-80 text-xs">
-            © {new Date().getFullYear()} GrowLifeSuprimo
+            © {new Date().getFullYear()} GroLife Supro Imo
           </div>
         </div>
 
@@ -113,7 +120,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
-              className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-orange-300 transition"
+              className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-orange-300 transition"
             />
 
             {/* Password Field */}
@@ -123,14 +130,14 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:outline-none focus:ring-2 focus:ring-orange-300 transition"
+              className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-orange-300 transition"
             />
 
-            {/* Feedback messages */}
+            {/* Feedback */}
             {msg && <div className="text-green-600 text-center font-medium">{msg}</div>}
             {err && <div className="text-red-500 text-center font-medium">{err}</div>}
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               disabled={loading}
               type="submit"

@@ -10,6 +10,7 @@ import connectDB from "./config/db";
 import dotenv from "dotenv";
 import AdminRoutes from "./routes/AdminRoutes";
 import superAdminRoutes from "./routes/superAdminRoutes";
+import treeRoutes from "./routes/treeRoutes";
 
 dotenv.config();
 const app = express();
@@ -60,6 +61,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/auth", authRoutes);
 app.use("/admin", AdminRoutes);
 app.use("/Superadmin", superAdminRoutes);
+app.use("/api", treeRoutes);
 
 // ✅ Start Server
 app.listen(PORT, () => {

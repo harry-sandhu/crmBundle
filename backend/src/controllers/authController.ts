@@ -4,6 +4,7 @@ import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
+import { generateRefCode } from "../utils/refCodeGenerator";
 import { sendOtpEmail, sendPasswordResetEmail } from "../utils/sendEmail";
 import { generateOtpForEmail, verifyOtpForEmail } from "../services/otpService"; // ✅ imported OTP service
 
@@ -22,99 +23,89 @@ const jsonOk = (res: Response, data: any, message = "OK") =>
 const jsonErr = (res: Response, status = 400, message = "Error") =>
   res.status(status).json({ success: false, message });
 
-/// ===========================
-// USER SIGNUP (OTP-first flow)
+// ===========================
+// USER SIGNUP (GroLife Supro Imo Referral System)
 // ===========================
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password,phone, referralCode } = req.body;
 
-    console.log("📥 Incoming signup:", { name, email, role });
+    console.log("📥 Incoming signup:", { name, email, referralCode });
 
+    // 1️⃣ Validate fields
     if (!name || !email || !password) {
-      console.warn("⚠️ Missing required fields");
       return res.status(400).json({
         success: false,
-        step: "validation",
         message: "Name, email, and password are required",
       });
     }
 
+    // 2️⃣ Check duplicate
     const existing = await User.findOne({ email });
     if (existing) {
-      console.warn("⚠️ Duplicate signup attempt:", email);
       return res.status(400).json({
         success: false,
-        step: "duplicate-check",
         message: "User already exists",
       });
     }
 
-    console.log("✅ User does not exist. Generating OTP...");
+    // 3️⃣ Hash password
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
-    let otpCode;
-    try {
-      otpCode = await generateOtpForEmail(email);
-      console.log("✅ OTP generated:", otpCode);
-    } catch (otpErr: any) {
-      console.error("❌ OTP generation failed:", otpErr.message);
-      return res.status(500).json({
-        success: false,
-        step: "otp-generation",
-        message: `Failed to generate OTP: ${otpErr.message}`,
-      });
+    // 4️⃣ Referral logic
+    let referredBy: string | null = null;
+    let ancestors: string[] = [];
+
+    if (referralCode) {
+      const parent = await User.findOne({ refCode: referralCode });
+      if (!parent) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid referral code",
+        });
+      }
+      referredBy = parent.refCode;
+      ancestors = [...(parent.ancestors || []), parent.refCode];
     }
 
-    try {
-      await sendOtpEmail(email, otpCode);
-      console.log("📧 OTP email sent to:", email);
-    } catch (emailErr: any) {
-      console.error("❌ Email send failed:", emailErr.message);
-      return res.status(500).json({
-        success: false,
-        step: "email-send",
-        message: `Failed to send OTP email: ${emailErr.message}`,
-        hint:
-          "Check if EMAIL_USER and EMAIL_PASS (App Password) are correct and less secure apps are disabled.",
-      });
-    }
+    // 5️⃣ Generate scalable refCode (1 crore+ safe)
+    const refCode = await generateRefCode(referralCode || null);
 
-    let hashedPassword;
-    try {
-      hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-      console.log("🔒 Password hashed successfully");
-    } catch (hashErr: any) {
-      console.error("❌ Password hashing failed:", hashErr.message);
-      return res.status(500).json({
-        success: false,
-        step: "password-hash",
-        message: `Failed to hash password: ${hashErr.message}`,
-      });
-    }
+    // 6️⃣ Create user
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      isVerified: true,
+      refCode,
+      phone,
+      referredBy,
+      ancestors,
+    });
 
-    console.log("✅ Signup pre-verification complete for:", email);
+    console.log("✅ User created:", user.email, "->", refCode);
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      step: "otp-sent",
-      message: "OTP sent to email. Complete signup by verifying the OTP.",
-      debug: {
-        email,
-        role,
-        hashedPassword,
+      message: "User registered successfully",
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        refCode: user.refCode,
+        referredBy: user.referredBy,
+        ancestors: user.ancestors,
       },
     });
   } catch (err: any) {
-    console.error("💥 Unexpected Signup Error:", err.message, err.stack);
+    console.error("💥 Signup error:", err.message);
     return res.status(500).json({
       success: false,
-      step: "unhandled",
-      message: `Signup crashed: ${err.message}`,
-      stack: err.stack,
+      message: "Signup failed",
+      error: err.message,
     });
   }
 };
-
 
 // ===========================
 // VERIFY OTP (Create user after OTP verification)
@@ -143,7 +134,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
     return jsonOk(
       res,
-      { email: user.email, role: user.role },
+      { email: user.email},
       `Signup successful and verified as ${finalRole}`
     );
   } catch (err) {
@@ -159,20 +150,20 @@ export const verifyOtp = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
-      return jsonErr(res, 400, "Email and password are required");
+    if (!email || !password) return jsonErr(res, 400, "Email and password are required");
 
     const user = await User.findOne({ email });
     if (!user) return jsonErr(res, 401, "Invalid credentials");
-    if (!user.isVerified)
-      return jsonErr(res, 401, "Please verify your email before logging in");
+    if (!user.isVerified) return jsonErr(res, 401, "Please verify your email before logging in");
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return jsonErr(res, 401, "Invalid credentials");
 
+    // Build payload — include refCode (useful), keep it small
     const payload = {
       userId: user._id.toString(),
-      role: user.role as "user" | "admin",
+      refCode: user.refCode,      // <- included in token
+      role: (user as any).role || "user", // optional
     };
 
     const token = jwt.sign(payload, JWT_SECRET, options);
@@ -185,7 +176,8 @@ export const login = async (req: Request, res: Response) => {
           id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role,
+          refCode: user.refCode,   // <- return to client
+          role: (user as any).role || "user",
         },
       },
       "Login successful"
