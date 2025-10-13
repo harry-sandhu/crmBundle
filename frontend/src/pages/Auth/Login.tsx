@@ -45,15 +45,30 @@ export default function Login() {
 
       // ✅ Redirect based on role
       // ✅ Redirect based on role (fallback = user)
-setTimeout(() => {
-  const userRole = user?.role?.toLowerCase?.() || "user";
+//   setTimeout(() => {
+//   const userRole = user?.role?.toLowerCase?.() || "user";
 
-  if (userRole === "admin") {
+//   if (userRole === "admin") {
+//     navigate("/admin", { replace: true });
+//   } else {
+//     navigate("/catalog", { replace: true });
+//   }
+// }, 1000);
+
+    setTimeout(() => {
+  const userRole = user?.role?.toLowerCase?.() || "user";
+  const userEmail = user?.email?.toLowerCase();
+
+  // Check for SuperAdmin email first
+  if (userEmail === "growlifesupremo2025@gmail.com" && userRole==="admin") {
+    navigate("/Superadmin", { replace: true });
+  } else if (userRole === "admin") {
     navigate("/admin", { replace: true });
   } else {
     navigate("/catalog", { replace: true });
   }
 }, 1000);
+
 
     } catch (error) {
       setErr(getApiErrorMessage(error));

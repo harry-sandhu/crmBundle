@@ -1,10 +1,10 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 const navLinks = [
-  { to: "/admin", label: "Dashboard" },
-  { to: "/admin/users", label: "Users" },
-  { to: "/admin/products", label: "Products" },
-  { to: "/admin/bundles", label: "Bundles" }
+  { to: "/Superadmin", label: "Dashboard" },
+  { to: "/Superadmin/users", label: "Users" },
+  { to: "/Superadmin/products", label: "Products" },
+  { to: "/Superadmin/bundles", label: "Bundles" }
 ];
 
 export default function AdminLayout() {

@@ -109,7 +109,7 @@ export default function ProductCRUD() {
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Delete product?")) {
-      await api.delete(`/admin/products/${id}`);
+      await api.delete(`/Superadmin/products/${id}`);
       refresh();
     }
   };

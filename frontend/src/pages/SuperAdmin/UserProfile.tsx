@@ -55,7 +55,7 @@ export default function UserProfile({ user, onClose }: UserProfileProps) {
   const [form, setForm] = useState<User>(user);
 
   const handleUpdate = async () => {
-    await api.put(`/admin/users/${user._id}`, form);
+    await api.put(`/Superadmin/users/${user._id}`, form);
     setEditMode(false);
     alert("User updated!");
   };

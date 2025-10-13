@@ -68,7 +68,7 @@ export default function BundleTable() {
   const [bundles, setBundles] = useState<Bundle[]>([]);
 
   useEffect(() => {
-    api.get("/admin/bundles").then((res) => setBundles(res.data));
+    api.get("/Superadmin/bundles").then((res) => setBundles(res.data));
   }, []);
 
   return (

@@ -86,10 +86,10 @@ import Dashboard from "../pages/User/Dashboard";
 import ReviewSubmit from "../pages/BundleMaker/ReviewSubmit";
 
 // Admin Pages
-import AdminPanel from "../pages/Admin/AdminPanel";
-import AdminUsers from "../pages/Admin/AdminUsers";
-import ProductCRUD from "../pages/Admin/ProductCRUD";
-import BundleTable from "../pages/Admin/BundleTable";
+import SuperAdminPanel from "../pages/SuperAdmin/SuperAdminPanel";
+import SuperAdminUsers from "../pages/SuperAdmin/SuperAdminUsers";
+import ProductCRUD from "../pages/SuperAdmin/ProductCRUD";
+import BundleTable from "../pages/SuperAdmin/BundleTable";
 
 export default function AppRoutes() {
   return (
@@ -124,11 +124,11 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/users" element={<AdminUsers onSelectUser={() => {}}/>
-} />
-          <Route path="/admin/products" element={<ProductCRUD />} />
-          <Route path="/admin/bundles" element={<BundleTable />} />
+          <Route path="/Superadmin" element={<SuperAdminPanel />} />
+          <Route path="/Superadmin/users" element={<SuperAdminUsers onSelectUser={() => {}}/>
+  } />
+          <Route path="/Superadmin/products" element={<ProductCRUD />} />
+          <Route path="/Superadmin/bundles" element={<BundleTable />} />
         </Route>
       </Routes>
     </BrowserRouter>

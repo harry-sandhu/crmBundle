@@ -62,7 +62,7 @@
 // }
 
 import { useState } from "react";
-import AdminUsers from "./AdminUsers";
+import AdminUsers from "./SuperAdminUsers";
 import UserProfile from "./UserProfile";
 import ProductCRUD from "./ProductCRUD";
 import BundleTable from "./BundleTable";
