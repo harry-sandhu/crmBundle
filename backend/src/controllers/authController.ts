@@ -7,7 +7,7 @@ import crypto from "crypto";
 import { generateRefCode } from "../utils/refCodeGenerator";
 import { sendOtpEmail, sendPasswordResetEmail } from "../utils/sendEmail";
 import { generateOtpForEmail, verifyOtpForEmail } from "../services/otpService"; // ✅ imported OTP service
-
+import axios from "axios";
 // ===========================
 // CONFIG & CONSTANTS
 // ===========================
@@ -26,6 +26,9 @@ const jsonErr = (res: Response, status = 400, message = "Error") =>
 // ===========================
 // USER SIGNUP (GroLife Supro Imo Referral System)
 // ===========================
+
+
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password,phone, referralCode,regamount } = req.body;
@@ -40,12 +43,12 @@ export const signup = async (req: Request, res: Response) => {
       });
     }
 
-    // 2️⃣ Check duplicate
-    const existing = await User.findOne({ email });
+    // 2️⃣ Check duplicates by both email and phone
+    const existing = await User.findOne({ $or: [{ email }, { phone }] });
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: "User already exists with this email or phone number",
       });
     }
 
@@ -68,10 +71,55 @@ export const signup = async (req: Request, res: Response) => {
       ancestors = [...(parent.ancestors || []), parent.refCode];
     }
 
-    // 5️⃣ Generate scalable refCode (1 crore+ safe)
+    // 5️⃣ Generate scalable refCode
     const refCode = await generateRefCode(referralCode || null);
 
-    // 6️⃣ Create user
+    // 6️⃣ Send SMS FIRST (before creating user)
+    const message = `Dear ${name}, thank you for signing up with GroLife Suprimo. Your referral code is ${refCode}.`;
+
+
+    let smsSent = false;
+
+    try {
+      const smsResponse = await axios.post(
+        "https://www.fast2sms.com/dev/bulkV2",
+        {
+          message,
+          language: "english",
+          route: "q",
+          numbers: phone,
+        },
+        {
+          headers: {
+            authorization: process.env.FAST2SMS_API_KEY,
+          },
+        }
+      );
+
+      console.log("📨 Fast2SMS response:", smsResponse.data);
+
+      // ✅ Confirm SMS was accepted
+      const smsData: any = smsResponse.data;
+      if (smsResponse.status === 200 && smsData.return === true) {
+
+        smsSent = true;
+        console.log("✅ SMS accepted by Fast2SMS");
+      } else {
+        console.error("⚠️ SMS not accepted:", smsResponse.data);
+      }
+    } catch (smsError: any) {
+      console.error("❌ Failed to send SMS:", smsError.response?.data || smsError.message);
+    }
+
+    // 7️⃣ Stop here if SMS failed
+    if (!smsSent) {
+      return res.status(400).json({
+        success: false,
+        message: "Signup aborted: SMS could not be sent. Please try again later.",
+      });
+    }
+
+    // 8️⃣ Create user only after SMS succeeds
     const user = await User.create({
       name,
       email,
@@ -86,13 +134,15 @@ export const signup = async (req: Request, res: Response) => {
 
     console.log("✅ User created:", user.email, "->", refCode);
 
+    // 9️⃣ Respond success
     return res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: "User registered successfully and SMS sent!",
       data: {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         refCode: user.refCode,
         referredBy: user.referredBy,
         ancestors: user.ancestors,
@@ -107,6 +157,7 @@ export const signup = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 // ===========================
 // VERIFY OTP (Create user after OTP verification)
