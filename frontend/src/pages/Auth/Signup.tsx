@@ -14,6 +14,7 @@ interface SignupResponse {
     refCode: string;
     referredBy?: string | null;
     ancestors?: string[];
+    regamount?: number;
   };
 }
 
@@ -23,6 +24,7 @@ export default function Signup() {
   const [mobile, setMobile] = useState("");
   const [referenceId, setReferenceId] = useState("");
   const [password, setPassword] = useState("");
+  const [regamount, setRegAmount] = useState<number | "">(""); // ✅ Added state
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ export default function Signup() {
     setErr("");
     setMsg("");
 
-    // 🚫 Require referral code for all users
+    // 🚫 Require referral code
     if (!referenceId) {
       setErr("Referral code is required. Please enter a valid one.");
       setLoading(false);
@@ -54,6 +56,13 @@ export default function Signup() {
       return;
     }
 
+    // ⚙️ Validate amount
+    if (!regamount || regamount <= 0) {
+      setErr("Please enter a valid registration amount.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await axios.post<SignupResponse>("/auth/signup", {
         name,
@@ -61,10 +70,11 @@ export default function Signup() {
         phone: mobile,
         password,
         referralCode: referenceId,
+        regamount, // ✅ Send numeric amount
       });
 
       if (res.data.success && res.data.data) {
-        const { email, name, refCode } = res.data.data;
+        const { email, name, refCode, regamount } = res.data.data;
 
         // ✅ Save to localStorage
         localStorage.setItem(
@@ -73,11 +83,14 @@ export default function Signup() {
             email,
             name,
             refCode,
+            regamount,
           })
         );
 
         // ✅ Success message
-        setMsg(`Signup successful! Your Referral ID: ${refCode}`);
+        setMsg(
+          `Signup successful! Your Referral ID: ${refCode}. Registration Amount: ₹${regamount}`
+        );
 
         // Redirect after a short delay
         setTimeout(() => navigate("/login"), 3000);
@@ -135,6 +148,19 @@ export default function Signup() {
             placeholder="Mobile Number"
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
           />
+
+          {/* ✅ Registration Amount Field */}
+          <input
+            type="number"
+            required
+            value={regamount}
+            onChange={(e) =>
+              setRegAmount(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            placeholder="Amount"
+            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
+          />
+
           <input
             type="text"
             required

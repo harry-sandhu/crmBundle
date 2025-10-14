@@ -1,4 +1,3 @@
-// backend/models/User.ts
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IUser extends Document {
@@ -7,11 +6,11 @@ export interface IUser extends Document {
   email: string;
   phone?: string;  
   password: string;
- 
   isVerified: boolean;
   refCode: string;                     // 🔹 unique referral code
   referredBy?: string | null;          // 🔹 parent’s refCode (if any)
   ancestors?: string[];                // 🔹 all ancestors up to root
+  regamount?: number;                  // ✅ Corrected type
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt?: Date;
@@ -24,10 +23,11 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true, index: true },
     password: { type: String, required: true },
     phone: { type: String, default: null },
-    isVerified: { type: Boolean, default: true }, // ✅ since no OTP now
+    isVerified: { type: Boolean, default: true },
     refCode: { type: String, required: true, unique: true },
     referredBy: { type: String, default: null },
     ancestors: [{ type: String }],
+    regamount: { type: Number, required: true }, // ✅ Fixed from array to number
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },

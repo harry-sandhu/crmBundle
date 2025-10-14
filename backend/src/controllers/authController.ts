@@ -28,15 +28,15 @@ const jsonErr = (res: Response, status = 400, message = "Error") =>
 // ===========================
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { name, email, password,phone, referralCode } = req.body;
+    const { name, email, password,phone, referralCode,regamount } = req.body;
 
     console.log("📥 Incoming signup:", { name, email, referralCode });
 
     // 1️⃣ Validate fields
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !regamount) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and password are required",
+        message: "Name, email,Amount and password  are required",
       });
     }
 
@@ -79,6 +79,7 @@ export const signup = async (req: Request, res: Response) => {
       isVerified: true,
       refCode,
       phone,
+      regamount,
       referredBy,
       ancestors,
     });
