@@ -403,7 +403,7 @@ export default function Catalog() {
   const dec = (p: Product) => {
     setQtyMap((m) => {
       const current = m[p.id] || 0;
-      const next = Math.max(0, current - 1);
+      const next = Math.max(0, current - 1);  
       const updated = { ...m, [p.id]: next };
       if (next === 0) delete updated[p.id];
       return updated;
