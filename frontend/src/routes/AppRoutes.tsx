@@ -1,78 +1,12 @@
-// // src/routes/AppRoutes.tsx
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import ProtectedRoute from "../components/ProtectedRoute";
-
-// // Layouts
-// import MainLayout from "../layouts/MainLayout";
-// import UserLayout from "../layouts/UserLayout";
-
-// // Public Pages
-// import Login from "../pages/Auth/Login";
-// import Signup from "../pages/Auth/Signup";
-// import VerifyOtp from "../pages/Auth/VerifyOtp";
-// import ForgotPassword from "../pages/Auth/ForgotPassword";
-
-// // User Pages
-// import Catalog from "../pages/Landing/Catalog";
-// import Dashboard from "../pages/User/Dashboard";
-// import ReviewSubmit from "../pages/BundleMaker/ReviewSubmit";
-// import AdminPanel from "../pages/Admin/AdminPanel";
-// import AdminUsers from "../pages/Admin/AdminUsers";
-// import ProductCRUD from "../pages/Admin/ProductCRUD";
-// import BundleTable from "../pages/Admin/BundleTable";
-
-// export default function AppRoutes() {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         {/* 🟢 PUBLIC ROUTES */}
-//         <Route element={<MainLayout />}>
-//           <Route path="/" element={<Login />} />
-//           <Route path="/register" element={<Signup />} />
-//           <Route path="/verify-otp" element={<VerifyOtp />} />
-//           <Route path="/forgot-password" element={<ForgotPassword />} />
-//         </Route>
-
-//         {/* 🔒 PROTECTED USER ROUTES */}
-//         <Route
-//           element={
-//             <ProtectedRoute role="user">
-//               <UserLayout  />
-//             </ProtectedRoute>
-//           }
-//         >
-//           <Route path="/catalog" element={<Catalog />} />
-//           <Route path="/dashboard" element={<Dashboard />} />
-//           <Route path="/bundle/review" element={<ReviewSubmit />} />
-//         </Route>
-
-        
-//         {/* 🔒 PROTECTED ADMIN ROUTES */}
-//         <Route
-//           element={
-//             <ProtectedRoute role="admin">
-//               <AdminLayout /> {/* Or use AdminPanel here if no layout */}
-//             </ProtectedRoute>
-//           }
-//         >
-//           <Route path="/admin" element={<AdminPanel/>} />
-//           <Route path="/admin/users" element={<AdminUsers/>}>
-//           <Route path="/admin/products" element={<ProductCRUD />} />
-//           <Route path="/admin/bundles" element={<BundleTable />} />
-//         </Route>
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
-
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+// src/routes/AppRoutes.tsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 // Layouts
 import MainLayout from "../layouts/MainLayout";
-import UserLayout from "../layouts/UserLayout";
-import AdminLayout from "../layouts/AdminLayout"; // optional, if you want sidebar/topbar
+import AppLayout from "../pages/Landing/AppLayout";
+import AdminLayout from "../layouts/AdminLayout";
+// import UserLayout from "../layouts/UserLayout";
 
 // Public Pages
 import Login from "../pages/Auth/Login";
@@ -80,56 +14,77 @@ import Signup from "../pages/Auth/Signup";
 import VerifyOtp from "../pages/Auth/VerifyOtp";
 import ForgotPassword from "../pages/Auth/ForgotPassword";
 
-// User Pages
+// User Area
+import DashboardHome from "../pages/Landing/DashboardHome";
+// import WelcomeLetter from "../pages/Landing/WelcomeLetter";
 import Catalog from "../pages/Landing/Catalog";
-import Dashboard from "../pages/User/Dashboard";
-import ReviewSubmit from "../pages/BundleMaker/ReviewSubmit";
+// import Orders from "../pages/Catalog/Orders";
+// import MyCart from "../pages/Catalog/MyCart";
+import ReviewBundle from "../pages/BundleMaker/ReviewSubmit";
+import {
+  TeamAll,
+  TeamTree,
+  TeamSummary,
+  TeamReferral,
+  TeamGeneration,
+  CommissionDashboard,
+  CommissionEarnings,
+} from "../pages/Landing/stubs";
 
-// Admin Pages
+// Admin Area (still protected but no role check here)
 import SuperAdminPanel from "../pages/SuperAdmin/SuperAdminPanel";
 import SuperAdminUsers from "../pages/SuperAdmin/SuperAdminUsers";
 import ProductCRUD from "../pages/SuperAdmin/ProductCRUD";
 import BundleTable from "../pages/SuperAdmin/BundleTable";
+import Profile from "../pages/User/Profile"
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 🟢 PUBLIC ROUTES */}
+        {/* Public */}
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Signup />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
-        {/* 🔒 PROTECTED USER ROUTES */}
-        <Route
-          element={
-            <ProtectedRoute role="user">
-              <UserLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/bundle/review" element={<ReviewSubmit />} />
+        {/* Protected USER area */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardHome />} />
+            {/* <Route path="/welcome-letter" element={<WelcomeLetter />} /> */}
+            {/* <Route path="/shop/orders" element={<Orders />} /> */}
+            {/* <Route path="/shop/my-cart" element={<MyCart />} /> */}
+            <Route path="/team/all" element={<TeamAll />} />
+            <Route path="/team/view-tree" element={<TeamTree />} />
+            <Route path="/team/summary" element={<TeamSummary />} />
+            <Route path="/team/referral" element={<TeamReferral />} />
+            <Route path="/team/generation" element={<TeamGeneration />} />
+            <Route path="/commission/dashboard" element={<CommissionDashboard />} />
+            <Route path="/commission/earnings" element={<CommissionEarnings />} />
+            {/* <Route element={<UserLayout />}> */}
+              <Route path="/shop/catalog" element={<Catalog />} />
+              <Route path="/bundle/review" element={<ReviewBundle />} />
+            {/* </Route> */}
+            <Route path="/profile" element={<Profile/>} />
+          </Route>
         </Route>
-        
-        {/* 🔒 PROTECTED ADMIN ROUTES */}
-        <Route
-          element={
-            <ProtectedRoute role="admin">
-              <AdminLayout /> {/* Or use AdminPanel here if no layout */}
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/Superadmin" element={<SuperAdminPanel />} />
-          <Route path="/Superadmin/users" element={<SuperAdminUsers onSelectUser={() => {}}/>
-  } />
-          <Route path="/Superadmin/products" element={<ProductCRUD />} />
-          <Route path="/Superadmin/bundles" element={<BundleTable />} />
+
+        {/* Protected ADMIN area (no role gating here; add back if needed) */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/Superadmin" element={<SuperAdminPanel />} />
+            <Route path="/Superadmin/users" element={<SuperAdminUsers onSelectUser={() => {}} />}/>
+            <Route path="/Superadmin/products" element={<ProductCRUD />} />
+            <Route path="/Superadmin/bundles" element={<BundleTable />} />
+          </Route>
         </Route>
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

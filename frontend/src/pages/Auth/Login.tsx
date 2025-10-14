@@ -71,10 +71,9 @@ export default function Login() {
 
         if (userEmail === "growlifesupremo2025@gmail.com" && userRole === "admin") {
           navigate("/Superadmin", { replace: true });
-        } else if (userRole === "admin") {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/catalog", { replace: true });
+        }
+         else {
+          navigate("/dashboard", { replace: true });
         }
       }, 1000);
     } catch (error) {
