@@ -57,6 +57,8 @@ export default function AppLayout() {
           >
             Dashboard
           </button>
+          
+
           <button
             onClick={() => {
               localStorage.removeItem("token");
@@ -86,7 +88,7 @@ export default function AppLayout() {
               Quick
             </div>
             <MenuLink to="/welcome-letter" label="Welcome Letter" />
-            <MenuLink to="/forgot-password" label="Forget Password" />
+            <MenuLink to="/change-password" label="Change Password" />
             <MenuLink to="/profile" label="Profile" />
 
             {/* Shop */}
@@ -102,7 +104,7 @@ export default function AppLayout() {
                 <div className="ml-3 mt-1 space-y-1">
                   <MenuLink to="/shop/catalog" label="Catalog" />
                   <MenuLink to="/shop/orders" label="Orders" />
-                  <MenuLink to="/shop/my-cart" label="My Cart" />
+                  {/* <MenuLink to="/shop/my-cart" label="My Cart" /> */}
                 </div>
               )}
             </div>

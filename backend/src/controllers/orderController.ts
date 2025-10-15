@@ -1,0 +1,37 @@
+// controllers/orderController.ts
+import Order from "../models/Order";
+
+export async function submitBundle(req, res) {
+  try {
+    const userId = req.user.id;
+    const { items, notes } = req.body as {
+      items: Array<{ productId: string; title: string; qty: number; dp?: number; mrp?: number }>;
+      notes?: string;
+    };
+
+    if (!items?.length) {
+      return res.status(400).json({ success: false, message: "No items" });
+    }
+
+    // Compute DP total
+    const totalAmount = items.reduce((sum, i) => sum + (i.dp ?? 0) * i.qty, 0);
+    
+    // Persist order (DP totals)
+    const order = await Order.create({
+      userId,
+      items: items.map((i) => ({
+        productId: i.productId,
+        qty: i.qty,
+        dp: i.dp ?? 0,
+        mrp: i.mrp ?? 0,
+        lineTotal: (i.dp ?? 0) * i.qty,
+      })),
+      totalAmount, // DP sum
+      notes,
+    });
+
+    return res.json({ success: true, data: { orderId: order._id, totalAmount } });
+  } catch (e) {
+    return res.status(500).json({ success: false, message: "Failed to submit bundle" });
+  }
+}

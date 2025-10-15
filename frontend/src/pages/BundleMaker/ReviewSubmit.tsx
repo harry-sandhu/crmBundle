@@ -1,48 +1,5 @@
-// // src/pages/BundleMaker/ReviewBundle.tsx
-// import { useBundleStore } from "../../store/useStore";
-// import { useNavigate } from "react-router-dom";
-
-// export default function ReviewBundle() {
-//   const { items, clearBundle } = useBundleStore();
-//   const navigate = useNavigate();
-//   const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-
-//   const handleSubmit = () => {
-//     alert("Bundle submitted successfully!");
-//     clearBundle();
-//     navigate("/catalog");
-//   };
-
-//   return (
-//     <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6">
-//       <h2 className="text-2xl font-bold text-green-800 mb-4">Review Your Bundle</h2>
-//       {items.length === 0 ? (
-//         <p className="text-center text-gray-500">No items in your bundle.</p>
-//       ) : (
-//         <>
-//           <ul className="divide-y divide-green-100">
-//             {items.map((i) => (
-//               <li key={i.productId} className="py-3 flex justify-between">
-//                 <p className="text-green-700">{i.title}</p>
-//                 <p className="font-semibold text-green-700">₹{i.price}</p>
-//               </li>
-//             ))}
-//           </ul>
-//           <p className="mt-3 font-semibold text-green-700">Total: ₹{total}</p>
-//           <button
-//             onClick={handleSubmit}
-//             className="mt-5 w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
-//           >
-//             Submit Bundle
-//           </button>
-//         </>
-//       )}
-//     </div>
-//   );
-// }
 
 
-// src/pages/BundleMaker/ReviewBundle.tsx
 // import { useEffect, useMemo } from "react";
 // import { useBundleStore } from "../../store/useStore";
 // import { useNavigate } from "react-router-dom";
@@ -53,6 +10,15 @@
 // type PVEntry = {
 //   pv: number;
 //   ts: number; // timestamp ms
+// };
+
+// // Match your store item shape (no any)
+// type BundleItem = {
+//   productId: string;
+//   title: string;
+//   qty: number;
+//   mrp: number;
+//   dp: number;
 // };
 
 // const getRecentPVEntries = (): PVEntry[] => {
@@ -84,22 +50,29 @@
 //   const { items, clearBundle } = useBundleStore();
 //   const navigate = useNavigate();
 
-//   // line computations
-//   const lineMRP = (i: any) => (i.mrp || 0) * i.qty;
-//   const lineDP = (i: any) => (i.dp || 0) * i.qty;
-//   const linePV = (i: any) => Math.floor(lineDP(i) / 1000) * 100;
+//   // totals (uncapped) — inline helpers to avoid extra deps
+//   const totalMRP = useMemo(() => {
+//     return (items as BundleItem[]).reduce((sum, i) => sum + (i.mrp ?? 0) * i.qty, 0);
+//   }, [items]);
 
-//   // totals (uncapped)
-//   const totalMRP = useMemo(() => items.reduce((sum, i) => sum + lineMRP(i), 0), [items]);
-//   const totalDP = useMemo(() => items.reduce((sum, i) => sum + lineDP(i), 0), [items]);
-//   const totalPVRaw = useMemo(() => items.reduce((sum, i) => sum + linePV(i), 0), [items]);
+//   const totalDP = useMemo(() => {
+//     return (items as BundleItem[]).reduce((sum, i) => sum + (i.dp ?? 0) * i.qty, 0);
+//   }, [items]);
+
+//   const totalPVRaw = useMemo(() => {
+//     return (items as BundleItem[]).reduce((sum, i) => {
+//       const lineDP = (i.dp ?? 0) * i.qty;
+//       const pv = Math.floor(lineDP / 1000) * 100;
+//       return sum + pv;
+//     }, 0);
+//   }, [items]);
 
 //   // Compute capped PV for display and submission
 //   const recentPV = useMemo(() => getRecentPVTotal(), []);
 //   const remainingPV = Math.max(0, 5000 - recentPV);
-//   const totalPVDisplay = Math.min(totalPVRaw, remainingPV || 0) + recentPV > 5000
-//     ? 5000 // safety guard
-//     : Math.min(5000, recentPV + totalPVRaw) - recentPV;
+
+//   // PV that can be counted now (capped) without exceeding 5000 in the last 24h
+//   const totalPVDisplay = Math.min(totalPVRaw, remainingPV);
 
 //   // Immediately alert if cap applies when landing on this page
 //   useEffect(() => {
@@ -107,15 +80,14 @@
 //       const overBy = totalPVRaw - totalPVDisplay;
 //       alert(
 //         `PV capped to 5000 in the last 24 hours. ` +
-//         `You can add only ${totalPVDisplay} PV now (excess ${overBy} PV not counted).`
+//           `You can add only ${totalPVDisplay} PV now (excess ${overBy} PV not counted).`
 //       );
 //     }
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, []);
+//   }, [totalPVRaw, totalPVDisplay]);
 
 //   const handleSubmit = () => {
-//     // Record only the capped PV increment (the portion we can actually count now)
-//     const submitPV = totalPVDisplay; // amount that will be credited from this submission
+//     // Record only the capped PV increment
+//     const submitPV = totalPVDisplay;
 //     if (submitPV > 0) pushPV(submitPV);
 
 //     alert("Bundle submitted successfully!");
@@ -127,7 +99,7 @@
 //     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
 //       <h2 className="text-2xl font-bold text-green-800 mb-4">Review Your Bundle</h2>
 
-//       {items.length === 0 ? (
+//       {(items as BundleItem[]).length === 0 ? (
 //         <p className="text-center text-gray-500">No items in your bundle.</p>
 //       ) : (
 //         <>
@@ -146,17 +118,22 @@
 //                 </tr>
 //               </thead>
 //               <tbody>
-//                 {items.map((i) => (
-//                   <tr key={i.productId} className="border-b">
-//                     <td className="px-3 py-2">{i.title}</td>
-//                     <td className="px-3 py-2">{i.qty}</td>
-//                     <td className="px-3 py-2">₹{(i.mrp || 0).toLocaleString()}</td>
-//                     <td className="px-3 py-2">₹{(i.dp || 0).toLocaleString()}</td>
-//                     <td className="px-3 py-2">₹{lineMRP(i).toLocaleString()}</td>
-//                     <td className="px-3 py-2">₹{lineDP(i).toLocaleString()}</td>
-//                     <td className="px-3 py-2">{linePV(i).toLocaleString()}</td>
-//                   </tr>
-//                 ))}
+//                 {(items as BundleItem[]).map((i) => {
+//                   const lineMrp = (i.mrp ?? 0) * i.qty;
+//                   const lineDp = (i.dp ?? 0) * i.qty;
+//                   const linePv = Math.floor(lineDp / 1000) * 100;
+//                   return (
+//                     <tr key={i.productId} className="border-b">
+//                       <td className="px-3 py-2">{i.title}</td>
+//                       <td className="px-3 py-2">{i.qty}</td>
+//                       <td className="px-3 py-2">₹{(i.mrp ?? 0).toLocaleString()}</td>
+//                       <td className="px-3 py-2">₹{(i.dp ?? 0).toLocaleString()}</td>
+//                       <td className="px-3 py-2">₹{lineMrp.toLocaleString()}</td>
+//                       <td className="px-3 py-2">₹{lineDp.toLocaleString()}</td>
+//                       <td className="px-3 py-2">{linePv.toLocaleString()}</td>
+//                     </tr>
+//                   );
+//                 })}
 //               </tbody>
 //               <tfoot className="bg-green-50">
 //                 <tr>
@@ -170,14 +147,13 @@
 //                     ₹{totalDP.toLocaleString()}
 //                   </td>
 //                   <td className="px-3 py-2 font-semibold">
-//                     {/* Show capped PV that will be counted now */}
 //                     {totalPVDisplay.toLocaleString()}
 //                   </td>
 //                 </tr>
 //                 <tr>
 //                   <td className="px-3 py-2 text-sm text-gray-700" colSpan={7}>
 //                     Last 24h PV used: {recentPV.toLocaleString()} • Remaining capacity:{" "}
-//                     {Math.max(0, 5000 - recentPV).toLocaleString()} • This submission PV (capped):{" "}
+//                     {remainingPV.toLocaleString()} • This submission PV (capped):{" "}
 //                     {totalPVDisplay.toLocaleString()}
 //                   </td>
 //                 </tr>
@@ -198,19 +174,15 @@
 //   );
 // }
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBundleStore } from "../../store/useStore";
 import { useNavigate } from "react-router-dom";
+import api from "../../utils/api";
 
-// Local PV history storage key (client-side demo)
 const PV_HISTORY_KEY = "pv_submissions_history";
 
-type PVEntry = {
-  pv: number;
-  ts: number; // timestamp ms
-};
+type PVEntry = { pv: number; ts: number };
 
-// Match your store item shape (no any)
 type BundleItem = {
   productId: string;
   title: string;
@@ -218,6 +190,16 @@ type BundleItem = {
   mrp: number;
   dp: number;
 };
+
+type ApiErrorShape = {
+  response?: { data?: { message?: string } };
+  message?: string;
+};
+
+function getErrMessage(e: unknown): string {
+  const err = e as ApiErrorShape;
+  return err?.response?.data?.message || err?.message || "Failed to submit bundle";
+}
 
 const getRecentPVEntries = (): PVEntry[] => {
   const raw = localStorage.getItem(PV_HISTORY_KEY);
@@ -227,7 +209,6 @@ const getRecentPVEntries = (): PVEntry[] => {
     const now = Date.now();
     const dayAgo = now - 24 * 60 * 60 * 1000;
     const recent = arr.filter((e) => e.ts >= dayAgo);
-    // keep recent only
     localStorage.setItem(PV_HISTORY_KEY, JSON.stringify(recent));
     return recent;
   } catch {
@@ -239,69 +220,99 @@ const getRecentPVTotal = () => getRecentPVEntries().reduce((sum, e) => sum + e.p
 
 const pushPV = (pv: number) => {
   const now = Date.now();
-  const recent = getRecentPVEntries(); // also cleans old
+  const recent = getRecentPVEntries();
   recent.push({ pv, ts: now });
   localStorage.setItem(PV_HISTORY_KEY, JSON.stringify(recent));
 };
 
 export default function ReviewBundle() {
-  const { items, clearBundle } = useBundleStore();
+  const { items, clearBundle, notes } = useBundleStore() as {
+    items: BundleItem[];
+    clearBundle: () => void;
+    notes?: string;
+  };
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
 
-  // totals (uncapped) — inline helpers to avoid extra deps
-  const totalMRP = useMemo(() => {
-    return (items as BundleItem[]).reduce((sum, i) => sum + (i.mrp ?? 0) * i.qty, 0);
-  }, [items]);
+  const totalMRP = useMemo(
+    () => items.reduce((sum, i) => sum + (i.mrp ?? 0) * i.qty, 0),
+    [items]
+  );
 
-  const totalDP = useMemo(() => {
-    return (items as BundleItem[]).reduce((sum, i) => sum + (i.dp ?? 0) * i.qty, 0);
-  }, [items]);
+  const totalDP = useMemo(
+    () => items.reduce((sum, i) => sum + (i.dp ?? 0) * i.qty, 0),
+    [items]
+  );
 
-  const totalPVRaw = useMemo(() => {
-    return (items as BundleItem[]).reduce((sum, i) => {
-      const lineDP = (i.dp ?? 0) * i.qty;
-      const pv = Math.floor(lineDP / 1000) * 100;
-      return sum + pv;
-    }, 0);
-  }, [items]);
+  const totalPVRaw = useMemo(
+    () =>
+      items.reduce((sum, i) => {
+        const lineDP = (i.dp ?? 0) * i.qty;
+        const pv = Math.floor(lineDP / 1000) * 100;
+        return sum + pv;
+      }, 0),
+    [items]
+  );
 
-  // Compute capped PV for display and submission
   const recentPV = useMemo(() => getRecentPVTotal(), []);
   const remainingPV = Math.max(0, 5000 - recentPV);
-
-  // PV that can be counted now (capped) without exceeding 5000 in the last 24h
   const totalPVDisplay = Math.min(totalPVRaw, remainingPV);
 
-  // Immediately alert if cap applies when landing on this page
   useEffect(() => {
     if (totalPVRaw > totalPVDisplay) {
       const overBy = totalPVRaw - totalPVDisplay;
       alert(
-        `PV capped to 5000 in the last 24 hours. ` +
-          `You can add only ${totalPVDisplay} PV now (excess ${overBy} PV not counted).`
+        `PV capped to 5000 in the last 24 hours. You can add only ${totalPVDisplay} PV now (excess ${overBy} PV not counted).`
       );
     }
   }, [totalPVRaw, totalPVDisplay]);
 
-  const handleSubmit = () => {
-    // Record only the capped PV increment
-    const submitPV = totalPVDisplay;
-    if (submitPV > 0) pushPV(submitPV);
+  const handleSubmit = async () => {
+    if (!items.length) {
+      alert("No items to submit.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const submitPV = totalPVDisplay;
+      if (submitPV > 0) pushPV(submitPV);
 
-    alert("Bundle submitted successfully!");
-    clearBundle();
-    navigate("/catalog");
+      const payload = {
+        items: items.map((i) => ({
+          productId: i.productId,
+          title: i.title,
+          qty: i.qty,
+          mrp: i.mrp ?? 0,
+          dp: i.dp ?? 0,
+        })),
+        notes: notes || "",
+      };
+
+      const resp = await api.post("/api/orders/submit", payload);
+      if (!resp.data?.success) {
+        throw new Error(resp.data?.message || "Order submission failed");
+      }
+
+      alert("Bundle submitted successfully!");
+      clearBundle();
+      navigate("/shop/catalog");
+    } catch (err: unknown) {
+      const msg = getErrMessage(err);
+      console.error("Submit bundle failed:", msg, err);
+      alert(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
       <h2 className="text-2xl font-bold text-green-800 mb-4">Review Your Bundle</h2>
 
-      {(items as BundleItem[]).length === 0 ? (
+      {items.length === 0 ? (
         <p className="text-center text-gray-500">No items in your bundle.</p>
       ) : (
         <>
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="min-w-full border border-green-100 rounded-lg">
               <thead className="bg-green-50 text-left">
@@ -316,7 +327,7 @@ export default function ReviewBundle() {
                 </tr>
               </thead>
               <tbody>
-                {(items as BundleItem[]).map((i) => {
+                {items.map((i) => {
                   const lineMrp = (i.mrp ?? 0) * i.qty;
                   const lineDp = (i.dp ?? 0) * i.qty;
                   const linePv = Math.floor(lineDp / 1000) * 100;
@@ -338,15 +349,9 @@ export default function ReviewBundle() {
                   <td className="px-3 py-2 font-semibold" colSpan={4}>
                     Final Totals
                   </td>
-                  <td className="px-3 py-2 font-semibold">
-                    ₹{totalMRP.toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 font-semibold">
-                    ₹{totalDP.toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 font-semibold">
-                    {totalPVDisplay.toLocaleString()}
-                  </td>
+                  <td className="px-3 py-2 font-semibold">₹{totalMRP.toLocaleString()}</td>
+                  <td className="px-3 py-2 font-semibold">₹{totalDP.toLocaleString()}</td>
+                  <td className="px-3 py-2 font-semibold">{totalPVDisplay.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-2 text-sm text-gray-700" colSpan={7}>
@@ -359,12 +364,12 @@ export default function ReviewBundle() {
             </table>
           </div>
 
-          {/* Submit */}
           <button
             onClick={handleSubmit}
-            className="mt-5 w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+            disabled={submitting}
+            className="mt-5 w-full py-3 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white rounded-lg"
           >
-            Submit Bundle
+            {submitting ? "Submitting..." : "Submit Bundle"}
           </button>
         </>
       )}

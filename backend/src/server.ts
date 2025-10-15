@@ -8,9 +8,11 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import connectDB from "./config/db";
 import dotenv from "dotenv";
-import AdminRoutes from "./routes/AdminRoutes";
-import superAdminRoutes from "./routes/superAdminRoutes";
+// import AdminRoutes from "./routes/AdminRoutes";
+// import superAdminRoutes from "./routes/superAdminRoutes";
 import treeRoutes from "./routes/treeRoutes";
+import meRoutes from "./routes/me"
+import orderRoutes from "./routes/orders";
 
 dotenv.config();
 const app = express();
@@ -59,9 +61,11 @@ app.get("/", (req: Request, res: Response) => {
 
 // ✅ Routes
 app.use("/auth", authRoutes);
-app.use("/admin", AdminRoutes);
-app.use("/Superadmin", superAdminRoutes);
+// app.use("/admin", AdminRoutes);
+// app.use("/Superadmin", superAdminRoutes);
 app.use("/api", treeRoutes);
+app.use("/api/me", meRoutes);
+app.use("/api", orderRoutes);
 
 // ✅ Start Server
 app.listen(PORT, () => {
