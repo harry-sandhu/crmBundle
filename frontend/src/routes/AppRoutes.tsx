@@ -19,6 +19,7 @@ import ChangePassword from "../pages/Auth/ChangePassword";
 import DashboardHome from "../pages/Landing/DashboardHome";
 // import WelcomeLetter from "../pages/Landing/WelcomeLetter";
 import Catalog from "../pages/Landing/Catalog";
+import Orders from "../pages/Landing/MyOrders"
 // import Orders from "../pages/Catalog/Orders";
 // import MyCart from "../pages/Catalog/MyCart";
 import ReviewBundle from "../pages/BundleMaker/ReviewSubmit";
@@ -69,7 +70,7 @@ export default function AppRoutes() {
             <Route path="/commission/dashboard" element={<CommissionDashboard />} />
             <Route path="/commission/earnings" element={<CommissionEarnings />} />
             <Route path="/shop/catalog" element={<Catalog />} />
-            {/* <Route path="/shop/orders" element={<Orders />} /> */}
+            <Route path="/shop/orders" element={<Orders />} />
             <Route path="/bundle/review" element={<ReviewBundle />} />
             <Route path="/profile" element={<Profile/>} />
           </Route>

@@ -124,7 +124,6 @@ export default function AppLayout() {
                   <MenuLink to="/team/view-tree" label="View Tree" />
                   <MenuLink to="/team/summary" label="Team Summary" />
                   <MenuLink to="/team/referral" label="Referral Team" />
-                  <MenuLink to="/team/generation" label="Generation List" />
                 </div>
               )}
             </div>
