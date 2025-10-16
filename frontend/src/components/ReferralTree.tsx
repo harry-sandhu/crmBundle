@@ -54,7 +54,7 @@ export default function ReferralTree() {
 
     const fetchTree = async () => {
       try {
-        const res = await axios.get<ApiResponse>(`/api/tree/${refCode}`);
+        const res = await axios.get<ApiResponse>(`/api/tree/GROLIFE-ROOT-000000`);
         if (res.data.success) {
           const root = markAllActive(res.data.data);
           const { nodes, edges } = convertToFlow(root);
