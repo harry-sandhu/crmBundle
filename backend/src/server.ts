@@ -13,8 +13,9 @@ import dotenv from "dotenv";
 import treeRoutes from "./routes/treeRoutes";
 import meRoutes from "./routes/me"
 import orderRoutes from "./routes/orders";
-import productRoutes from "./routes/productRoutes"
-
+import earningsRoutes from "./routes/earningRoutes"
+import adminEarningsRoutes from "./routes/adminEarningsRoutes";
+import adminFixOrdersRoutes from "./routes/adminFixOrderRoutes"
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,7 +68,11 @@ app.use("/auth", authRoutes);
 app.use("/api", treeRoutes);
 app.use("/api/me", meRoutes);
 app.use("/api", orderRoutes);
-app.use("/api/products", productRoutes);
+app.use("/api/earnings", earningsRoutes);
+app.use("/api/admin/earnings", adminEarningsRoutes);
+app.use("/api/admin/fix", adminFixOrdersRoutes);
+
+
 
 // ✅ Start Server
 app.listen(PORT, () => {

@@ -1,4 +1,3 @@
-
 // backend/src/models/Order.ts
 import mongoose, { Schema, Document, Types } from "mongoose";
 
@@ -15,6 +14,7 @@ export interface IOrder extends Document {
   userId: Types.ObjectId | string;
   items: IOrderItem[];
   totalAmount: number;
+  totalPV?:number;
   status?: string;
   notes?: string;
   createdAt?: Date;
@@ -36,6 +36,7 @@ const OrderSchema = new Schema<IOrder>(
     items: { type: [OrderItemSchema], default: [] },
     totalAmount: { type: Number, required: true },
     status: { type: String, default: "submitted" },
+    totalPV: { type: Number, default: 0 },
     notes: { type: String },
   },
   { timestamps: true }
