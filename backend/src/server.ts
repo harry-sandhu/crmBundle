@@ -13,6 +13,7 @@ import dotenv from "dotenv";
 import treeRoutes from "./routes/treeRoutes";
 import meRoutes from "./routes/me"
 import orderRoutes from "./routes/orders";
+import productRoutes from "./routes/productRoutes"
 
 dotenv.config();
 const app = express();
@@ -66,7 +67,7 @@ app.use("/auth", authRoutes);
 app.use("/api", treeRoutes);
 app.use("/api/me", meRoutes);
 app.use("/api", orderRoutes);
-
+app.use("/api/products", productRoutes);
 
 // ✅ Start Server
 app.listen(PORT, () => {
