@@ -10,7 +10,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import Modal from "react-modal";
-import CustomReferralNode from "./CustomReferralNode"; // ✅ your custom node
+import CustomReferralNode from "./CustomReferralNode";
 
 // ----------------- Types -----------------
 interface TreeNode {
@@ -41,7 +41,6 @@ export default function ReferralTree() {
   const [error, setError] = useState("");
 
   const nodeTypes = { custom: CustomReferralNode };
-
   const localUser = localStorage.getItem("userInfo");
   const refCode = localUser ? JSON.parse(localUser).refCode : null;
 
@@ -62,9 +61,7 @@ export default function ReferralTree() {
           setTree(root);
           setNodes(nodes);
           setEdges(edges);
-        } else {
-          setError(res.data.message || "Failed to load tree");
-        }
+        } else setError(res.data.message || "Failed to load tree");
       } catch (err) {
         console.error("❌ Error fetching referral tree:", err);
         setError("Failed to fetch referral tree.");
@@ -94,7 +91,6 @@ export default function ReferralTree() {
       <h2 className="text-2xl font-bold text-green-700 mb-3 text-center">
         Referral Binary Tree 🌳
       </h2>
-
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -122,18 +118,6 @@ export default function ReferralTree() {
             Ref Code: {selected.refCode}
           </p>
 
-          <div className="mt-4 flex items-center gap-3">
-            <span className="text-sm text-gray-700">Status:</span>
-            <button
-              onClick={() => setTree((prev) => toggleActive(prev, selected.refCode))}
-              className={`px-3 py-1 rounded-full text-white text-sm ${
-                selected.active ? "bg-green-600" : "bg-gray-400"
-              }`}
-            >
-              {selected.active ? "Active" : "Inactive"}
-            </button>
-          </div>
-
           <button
             onClick={() => setSelected(null)}
             className="mt-5 text-sm text-red-500 hover:underline"
@@ -146,75 +130,61 @@ export default function ReferralTree() {
   );
 }
 
-// ----------------- Binary Tree Builder (Strict Left-First Spillover) -----------------
+// ----------------- Binary Tree Builder -----------------
 function convertToFlow(root: TreeNode): { nodes: Node<TreeNode>[]; edges: Edge[] } {
   const nodes: Node<TreeNode>[] = [];
   const edges: Edge[] = [];
 
   try {
-    // --- Step 1: Flatten structure ---
-    function flatten(node: TreeNode): TreeNode[] {
-      const arr: TreeNode[] = [node];
-      for (const child of node.children || []) arr.push(...flatten(child));
-      return arr;
+    // Collect all children recursively in BFS order
+    function collectBFS(root: TreeNode): TreeNode[] {
+      const queue: TreeNode[] = [root];
+      const bfs: TreeNode[] = [];
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        for (const child of current.children) {
+          bfs.push({ ...child, children: [...(child.children || [])] });
+          queue.push(child);
+        }
+      }
+      return bfs;
     }
 
-    const allNodes = flatten(root);
-
-    // --- Step 2: Build binary spillover tree (fixed layered version) ---
+    // --- Build binary tree (no root reprocessing) ---
     function buildBinary(rootNode: TreeNode): TreeNode {
-      const queue: TreeNode[] = [rootNode];
-      const waiting: TreeNode[] = [];
-      const processed = new Set<string>();
+      const waiting = collectBFS(rootNode);
+      console.log("🧾 Initial Waiting Queue:", waiting.map((n) => n.name));
 
-      // ✅ Step 1: Add root's direct children
-      for (const child of rootNode.children || []) waiting.push(child);
-      processed.add(rootNode.refCode);
+      const queue: TreeNode[] = [];
 
-      // ✅ Step 2: Fill root's 2 slots
+      // Step 1: Assign root children (only once)
       rootNode.children = [];
       while (rootNode.children.length < 2 && waiting.length > 0) {
         const next = waiting.shift()!;
-        console.log(`🟢 Root assigned ${next.name}`);
         rootNode.children.push(next);
-        queue.push(next);
+        queue.push(next); // push only children, not root
+        console.log(`🟢 Root got child: ${next.name}`);
       }
 
+      // Step 2: Fill level-by-level
       let level = 0;
-      // ✅ Step 3: Strict layered traversal
       while (waiting.length > 0 && queue.length > 0) {
         level++;
-        console.log(`\n🧩 Level ${level} processing...`);
-        console.log("📦 Current queue:", queue.map((n) => n.name));
-        console.log("🕓 Waiting before:", waiting.map((n) => n.name));
-
         const currentLevel = [...queue];
         queue.length = 0;
 
-        // Step A: enqueue all API children of current level nodes
-        for (const node of currentLevel) {
-          if (!node.children) node.children = [];
-          if (processed.has(node.refCode)) continue;
-          processed.add(node.refCode);
+        console.log(`\n🧩 Level ${level}`);
+        console.log("📦 Current Level:", currentLevel.map((n) => n.name));
+        console.log("🕓 Waiting before:", waiting.map((n) => n.name));
 
-          const original = allNodes.find((n) => n.refCode === node.refCode);
-          if (original && original.children.length > 0) {
-            for (const ch of original.children) {
-              if (!waiting.some((w) => w.refCode === ch.refCode)) {
-                waiting.push(ch);
-                console.log(`📥 Enqueued ${ch.name} from ${node.name}'s children`);
-              }
-            }
-          }
-        }
-
-        // Step B: assign from waiting pool strictly left-first per level
         for (const node of currentLevel) {
+          node.children = [];
           while (node.children.length < 2 && waiting.length > 0) {
             const next = waiting.shift()!;
-            console.log(`🟢 Assigning ${next.name} → ${node.name}`);
             node.children.push(next);
             queue.push(next);
+            console.log(`🟢 Assigned ${next.name} → ${node.name}`);
           }
         }
 
@@ -227,26 +197,25 @@ function convertToFlow(root: TreeNode): { nodes: Node<TreeNode>[]; edges: Edge[]
 
     const binaryRoot = buildBinary(root);
 
-    // --- Step 3: Layout for ReactFlow ---
+    // --- Traverse to build ReactFlow nodes + edges ---
     function traverse(node: TreeNode, x: number, y: number, level: number) {
       nodes.push({
-        id: node.refCode + "-" + level,
+        id: node.refCode,
         position: { x, y },
         data: node,
         type: "custom",
       });
 
       if (!node.children || node.children.length === 0) return;
-
-      const spacing = 300 / (level + 1); // slightly increased for balance
+      const spacing = 350 / (level + 1);
 
       if (node.children[0]) {
         const leftX = x - spacing;
         const leftY = y + 150;
         edges.push({
-          id: `${node.refCode}-L-${node.children[0].refCode}`,
-          source: node.refCode + "-" + level,
-          target: node.children[0].refCode + "-" + (level + 1),
+          id: `${node.refCode}->${node.children[0].refCode}`,
+          source: node.refCode,
+          target: node.children[0].refCode,
           style: { stroke: "#22c55e", strokeWidth: 1.5 },
         });
         traverse(node.children[0], leftX, leftY, level + 1);
@@ -256,9 +225,9 @@ function convertToFlow(root: TreeNode): { nodes: Node<TreeNode>[]; edges: Edge[]
         const rightX = x + spacing;
         const rightY = y + 150;
         edges.push({
-          id: `${node.refCode}-R-${node.children[1].refCode}`,
-          source: node.refCode + "-" + level,
-          target: node.children[1].refCode + "-" + (level + 1),
+          id: `${node.refCode}->${node.children[1].refCode}`,
+          source: node.refCode,
+          target: node.children[1].refCode,
           style: { stroke: "#22c55e", strokeWidth: 1.5 },
         });
         traverse(node.children[1], rightX, rightY, level + 1);
@@ -271,17 +240,4 @@ function convertToFlow(root: TreeNode): { nodes: Node<TreeNode>[]; edges: Edge[]
     console.error("🔥 Error inside convertToFlow:", err);
     return { nodes: [], edges: [] };
   }
-}
-
-// ----------------- Toggle Active -----------------
-function toggleActive(node: TreeNode | null, refCode: string): TreeNode | null {
-  if (!node) return null;
-  const updatedNode = { ...node };
-  if (updatedNode.refCode === refCode) {
-    updatedNode.active = !updatedNode.active;
-  }
-  updatedNode.children = updatedNode.children.map((child) =>
-    toggleActive(child, refCode) || child
-  );
-  return updatedNode;
 }

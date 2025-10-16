@@ -1,4 +1,8 @@
 import { Link } from "react-router-dom";
+import ReferralTree from "../../components/ReferralTree";
+import MyReferralTree from "../../components/MyReferralTree";
+import TeamSummaryPage from "../../components/TeamSummary"; 
+import MyTeamSummaryPage from "../../components/MyTeamSummary";
 
 function Shell({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
@@ -14,34 +18,38 @@ function Shell({ title, children }: { title: string; children?: React.ReactNode 
   );
 }
 
+// ✅ Binary Tree View (ReferralTree)
 export function TeamAll() {
   return (
     <Shell title="All Team">
-      List all members in your downline with filters, pagination, and export here.
+      <ReferralTree />
     </Shell>
   );
 }
 
+// ✅ Original API Tree View (MyReferralTree)
 export function TeamTree() {
   return (
     <Shell title="View Tree">
-      Visualize your referral hierarchy; integrate with your /api/tree/:refCode endpoint later.
+      <MyReferralTree />
     </Shell>
   );
 }
 
+// ✅ Team Summary Page (Table View)
 export function TeamSummary() {
   return (
     <Shell title="Team Summary">
-      Show aggregates like total team size, active/inactive counts, and growth over time.
+      <TeamSummaryPage />
     </Shell>
   );
 }
 
+// ✅ Referral Team — Now shows same TeamSummaryPage table
 export function TeamReferral() {
   return (
     <Shell title="Referral Team">
-      Display users directly referred by you with join dates and statuses.
+      <MyTeamSummaryPage />
     </Shell>
   );
 }
