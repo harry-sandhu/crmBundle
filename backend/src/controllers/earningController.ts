@@ -93,19 +93,36 @@ export const getEarningsDetails = async (req: Request, res: Response) => {
   try {
     const { refCode } = req.params;
 
-    // Find the user by their referral code
+    // Find current user
     const user = await User.findOne({ refCode });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Fetch all earnings associated with this user's refCode
-    const records = await EarningRecord.find({ refCode }).sort({ createdAt: -1 });
+    // Fetch all earnings with buyer info populated
+    const records = await EarningRecord.find({ refCode })
+      .sort({ createdAt: -1 })
+      .lean();
 
+    // Collect all buyer IDs
+    const buyerIds = Array.from(new Set(records.map((r) => String(r.sourceUserId))));
+    const buyers = await User.find({ _id: { $in: buyerIds } })
+      .select("name phone email refCode")
+      .lean();
+
+    const buyerMap = new Map(buyers.map((b) => [String(b._id), b]));
+
+    // Attach buyer info to each earning record
+    const enriched = records.map((r) => ({
+      ...r,
+      buyer: buyerMap.get(String(r.sourceUserId)) || null,
+    }));
+
+    // Group by type
     const grouped = {
-      pv: records.filter((r) => r.type === "pv"),
-      direct: records.filter((r) => r.type === "direct"),
-      matching: records.filter((r) => r.type === "matching"),
+      pv: enriched.filter((r) => r.type === "pv"),
+      direct: enriched.filter((r) => r.type === "direct"),
+      matching: enriched.filter((r) => r.type === "matching"),
     };
 
     res.json({ success: true, data: grouped });
