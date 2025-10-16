@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import ReferralTree from "../../components/ReferralTree";
 import MyReferralTree from "../../components/MyReferralTree";
-import TeamSummaryPage from "../../components/TeamSummary"; 
+import TeamSummaryPage from "../../components/TeamSummary";
 import MyTeamSummaryPage from "../../components/MyTeamSummary";
+
+// ✅ Import your new pages
+import EarningsDashboard from "../../components/EarningDashboard";
+import EarningsDetails from "../../components/EarningDetails";
 
 function Shell({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
@@ -62,18 +66,20 @@ export function TeamGeneration() {
   );
 }
 
+// ✅ Replace placeholder with actual dashboard
 export function CommissionDashboard() {
   return (
     <Shell title="Earning Dashboard">
-      Charts and KPIs for earnings; hook up to wallet/commissions endpoints later.
+      <EarningsDashboard />
     </Shell>
   );
 }
 
+// ✅ Replace placeholder with detailed table page
 export function CommissionEarnings() {
   return (
     <Shell title="My Earnings">
-      Tabular earnings with filters and downloadable statements.
+      <EarningsDetails />
     </Shell>
   );
 }
