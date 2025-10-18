@@ -81,14 +81,14 @@ export default function ReviewBundle() {
   );
 
   const recentPV = useMemo(() => getRecentPVTotal(), []);
-  const remainingPV = Math.max(0, 5000 - recentPV);
+  const remainingPV = Math.max(0, 4000 - recentPV);
   const totalPVDisplay = Math.min(totalPVRaw, remainingPV);
 
   useEffect(() => {
     if (totalPVRaw > totalPVDisplay) {
       const overBy = totalPVRaw - totalPVDisplay;
       alert(
-        `PV capped to 5000 in the last 24 hours. You can add only ${totalPVDisplay} PV now (excess ${overBy} PV not counted).`
+        `PV capped to 4000 in the last 24 hours. You can add only ${totalPVDisplay} PV now (excess ${overBy} PV not counted).`
       );
     }
   }, [totalPVRaw, totalPVDisplay]);

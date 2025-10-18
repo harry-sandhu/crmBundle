@@ -16,6 +16,12 @@ import orderRoutes from "./routes/orders";
 import earningsRoutes from "./routes/earningRoutes"
 import adminEarningsRoutes from "./routes/adminEarningsRoutes";
 import adminFixOrdersRoutes from "./routes/adminFixOrderRoutes"
+import adminMembers from "./routes/AdminRoutes";
+import adminMemberSearch from "./routes/AdminRoutes";
+import adminMemberDetail from "./routes/AdminRoutes";
+import adminProducts from "./routes/AdminRoutes";
+import productsPublic from "./routes/productRoutes";
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -71,8 +77,23 @@ app.use("/api", orderRoutes);
 app.use("/api/earnings", earningsRoutes);
 app.use("/api/admin/earnings", adminEarningsRoutes);
 app.use("/api/admin/fix", adminFixOrdersRoutes);
+app.use("/", adminMembers);
+app.use("/", adminMemberSearch);
+app.use("/", adminMemberDetail);
+app.use("/api", adminProducts);
+app.use("/api", productsPublic);
 
+// src/app.ts (excerpt)
+import path from "path";
 
+import adminProductsUpload from "./routes/AdminProductUpload";
+import adminOrders from "./routes/AdminOrderRoutes";
+// ... your existing app setup and middlewares
+import adminProductConfigure from "./routes/adminProductsConfigure"
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/api", adminProductsUpload);
+app.use("/api", adminProductConfigure);
+app.use("/api", adminOrders);
 
 // ✅ Start Server
 app.listen(PORT, () => {

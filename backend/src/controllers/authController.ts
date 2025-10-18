@@ -75,7 +75,7 @@ export const signup = async (req: Request, res: Response) => {
     const refCode = await generateRefCode(referralCode || null);
 
     // 6️⃣ Send SMS FIRST (before creating user)
-    const message = `Dear ${name}, thank you for signing up with GroLife Suprimo. Your referral code is ${refCode}.`;
+    const message = `Dear ${name}, thank you for signing up with GroLifeSuprimo. Your referral code is ${refCode}.`;
 
 
     let smsSent = false;
@@ -239,11 +239,78 @@ export const login = async (req: Request, res: Response) => {
     return jsonErr(res, 500, "Login failed");
   }
 };
+// // const JWT_SECRET = process.env.JWT_SECRET!;
+// const ACCESS_TTL = process.env.ACCESS_TTL || "15m"; // short-lived access token
 
+// const jwtOptions: jwt.SignOptions = {
+//   expiresIn: JWT_EXPIRES , // e.g., 15m
+//   issuer: "your-app",
+//   audience: "your-app-client",
+// };
 
-// ===========================
-// FORGOT PASSWORD
-// ===========================
+// // const jsonOk = (res: Response, data: any, message = "OK") =>
+// //   res.status(200).json({ ok: true, message, data });
+
+// // const jsonErr = (res: Response, code: number, message: string) =>
+// //   res.status(code).json({ ok: false, message });
+
+// export const login = async (req: Request, res: Response) => {
+//   try {
+//     const rawEmail = (req.body.email || "").toString().trim();
+//     const password = (req.body.password || "").toString();
+//     if (!rawEmail || !password) return jsonErr(res, 400, "Email and password are required");
+
+//     const email = rawEmail.toLowerCase();
+
+//     const user = await User.findOne({ email });
+//     if (!user) return jsonErr(res, 401, "Invalid credentials");
+//     if (!user.isVerified) return jsonErr(res, 401, "Please verify your email before logging in");
+
+//     const match = await bcrypt.compare(password, user.password);
+//     if (!match) return jsonErr(res, 401, "Invalid credentials");
+
+//     // Canonical role claim; default to "user"
+//     const role = (user as any).role ? String((user as any).role).toLowerCase() : "user";
+
+//     // Keep JWT small: only authz-relevant claims
+//     const payload = {
+//       sub: user._id.toString(),
+//       role,                // RBAC in client and server middlewares
+//       refCode: user.refCode, // useful claim if your app depends on it
+//     };
+
+//     const token = jwt.sign(payload, JWT_SECRET, jwtOptions);
+
+//     // Optional: set token in an httpOnly cookie to mitigate XSS
+//     // if (process.env.USE_COOKIE === "true") {
+//     //   res.cookie("accessToken", token, {
+//     //     httpOnly: true,
+//     //     secure: process.env.NODE_ENV === "production",
+//     //     sameSite: "strict",
+//     //     maxAge: 15 * 60 * 1000, // keep in sync with ACCESS_TTL
+//     //     path: "/",
+//     //   });
+//     // }
+
+//     // Minimal user profile for UI decisions (like redirecting to /admin)
+//     const safeUser = {
+//       id: user._id.toString(),
+//       name: user.name,
+//       email: user.email, // already normalized in DB as lowercase
+//       refCode: user.refCode,
+//       role,
+//     };
+
+//     return jsonOk(res, { token, user: safeUser }, "Login successful");
+//   } catch (err) {
+//     console.error("Login error:", err);
+//     return jsonErr(res, 500, "Login failed");
+//   }
+// };
+
+// // ===========================
+// // FORGOT PASSWORD
+// // ===========================
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
