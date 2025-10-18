@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -45,7 +45,7 @@ export default function Home() {
       setIndex((prev) => (prev + 1) % testimonials.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, );
 
   return (
     <div className="bg-gradient-to-br from-green-50 via-white to-emerald-50 text-gray-800">
