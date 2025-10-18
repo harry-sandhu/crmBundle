@@ -39,6 +39,10 @@ import {
 // import ProductCRUD from "../pages/SuperAdmin/ProductCRUD";
 // import BundleTable from "../pages/SuperAdmin/BundleTable";
 import Profile from "../pages/User/Profile"
+import Home from "../pages/Landing/Home";
+import AboutUs from "../pages/Landing/About";
+import Vision from "../pages/Landing/Vision";
+import Contact from "../pages/Landing/Contact";
 
 export default function AppRoutes() {
   return (
@@ -46,11 +50,14 @@ export default function AppRoutes() {
       <Routes>
         {/* Public */}
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Signup />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/" element={<Home />} />
+  <Route path="/aboutus" element={<AboutUs />} />
+  <Route path="/vision" element={<Vision />} />
+  <Route path="/contact" element={<Contact />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Signup />} />
+  <Route path="/verify-otp" element={<VerifyOtp />} />
+  <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         {/* Protected USER area */}
