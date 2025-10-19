@@ -246,12 +246,12 @@ import {
 import Profile from "../pages/User/Profile";
 
 // Admin Pages
-// import AdminDashboard from "../pages/Admin/";
+ import AdminDashboard from "../pages/Admin/AdminOverview";
 import MembersAll from "../pages/Admin/Members/MembersAll";
 import MemberFind from "../pages/Admin/Members/MemberFind";
 import MemberAdd from "../pages/Admin/Members/MemberAdd";
 import UserTree from "../pages/Admin/UserTree";
-// import Earnings from "../pages/Admin/Earnings";
+ import Earnings from "../pages/Admin/earning";
 import ProductAdd from "../pages/Admin/AddProduct";
 import ProductManage from "../pages/Admin/ManageProduct";
 import OrdersAll from "../pages/Admin/AllOrders";
@@ -300,12 +300,12 @@ export default function AppRoutes() {
             </AdminRoute>
           }
         >
-          {/* <Route index element={<AdminDashboard />} /> */}
+           <Route index element={<AdminDashboard />} /> 
           <Route path="members/all" element={<MembersAll />} />
           <Route path="members/find" element={<MemberFind />} />
           <Route path="members/add" element={<MemberAdd />} />
           <Route path="tree" element={<UserTree />} />
-          {/* <Route path="earnings" element={<Earnings />} /> */}
+           <Route path="earnings" element={<Earnings />} /> 
           <Route path="products/add" element={<ProductAdd />} />
           <Route path="products/manage" element={<ProductManage />} />
           <Route path="orders" element={<OrdersAll />} />

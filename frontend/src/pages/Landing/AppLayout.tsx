@@ -87,7 +87,7 @@ export default function AppLayout() {
             <div className="text-slate-300/80 uppercase text-[11px] tracking-wider px-3 mt-4 mb-1">
               Quick
             </div>
-            <MenuLink to="/welcome-letter" label="Welcome Letter" />
+            
             <MenuLink to="/change-password" label="Change Password" />
             <MenuLink to="/profile" label="Profile" />
 

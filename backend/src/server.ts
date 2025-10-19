@@ -92,6 +92,9 @@ import adminProductsUpload from "./routes/AdminProductUpload";
 import adminOrders from "./routes/AdminOrderRoutes";
 // ... your existing app setup and middlewares
 import adminProductConfigure from "./routes/adminProductsConfigure"
+import adminSummaryRoutes from "./routes/adminSummaryRoutes";
+app.use("/api", adminSummaryRoutes);
+
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api", adminProductsUpload);
