@@ -6,6 +6,7 @@ interface TreeNode {
   email: string;
   phone?: string | null;
   refCode: string;
+  active?: boolean;
   children: TreeNode[];
 }
 
@@ -15,15 +16,17 @@ interface TreeNode {
 async function buildTree(refCode: string, depth = Infinity): Promise<TreeNode | null> {
   if (depth <= 0) return null;
 
+  // 🟢 include active field in query projection
   const user = await User.findOne(
     { refCode },
-    { name: 1, email: 1, phone: 1, refCode: 1 }
+    { name: 1, email: 1, phone: 1, refCode: 1, active: 1 }
   ).lean();
   if (!user) return null;
 
+  // 🟢 include active in children too
   const children = await User.find(
     { referredBy: refCode },
-    { name: 1, email: 1, phone: 1, refCode: 1 }
+    { name: 1, email: 1, phone: 1, refCode: 1, active: 1 }
   ).lean();
 
   const childTrees: TreeNode[] = [];
@@ -38,6 +41,7 @@ async function buildTree(refCode: string, depth = Infinity): Promise<TreeNode | 
     email: user.email,
     phone: user.phone || null,
     refCode: user.refCode,
+    active: user.active ?? true, // 🟢 ensure default true
     children: childTrees,
   };
 }
@@ -48,7 +52,7 @@ async function buildTree(refCode: string, depth = Infinity): Promise<TreeNode | 
 async function buildTreeBulk(refCode: string): Promise<TreeNode | null> {
   const allUsers = await User.find(
     { $or: [{ refCode }, { ancestors: refCode }] },
-    { name: 1, email: 1, phone: 1, refCode: 1, referredBy: 1 }
+    { name: 1, email: 1, phone: 1, refCode: 1, referredBy: 1, active: 1 } // 🟢 include active
   ).lean();
 
   if (!allUsers.length) return null;
@@ -60,6 +64,7 @@ async function buildTreeBulk(refCode: string): Promise<TreeNode | null> {
       email: user.email,
       phone: user.phone,
       refCode: user.refCode,
+      active: user.active ?? true, // 🟢 default true
       children: [],
     });
   }
@@ -90,7 +95,6 @@ export const getReferralTree = async (req: Request, res: Response) => {
     if (!refCode)
       return res.status(400).json({ success: false, message: "Referral code is required" });
 
-    // Count how many users exist under this refCode
     const total = await User.countDocuments({ ancestors: refCode });
 
     let tree: TreeNode | null = null;

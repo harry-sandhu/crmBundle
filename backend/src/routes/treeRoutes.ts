@@ -7,4 +7,5 @@ const router = express.Router();
 // GET /api/tree/:refCode → returns the entire referral tree
 router.get("/tree/:refCode", getReferralTree);
 
+
 export default router;

@@ -22,35 +22,47 @@ export default function DashboardHome() {
 
   const [team, setTeam] = useState<TeamMember[]>([]);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      setLoading(true);
-      try {
-        const [statsRes, teamRes] = await Promise.all([
-          api.get("/api/me/dashboard"),
-          api.get("/api/me/team?mode=descendants"),
-        ]);
+ useEffect(() => {
+  let mounted = true;
+  (async () => {
+    setLoading(true);
+    try {
+      // STEP 1: Fetch basic dashboard + team
+      const [statsRes, teamRes] = await Promise.all([
+        api.get("/api/me/dashboard"),
+        api.get("/api/me/team?mode=descendants"),
+      ]);
 
-        if (!mounted) return;
-        const sd = statsRes.data?.data || {};
-        setTotalUsers(sd.totalUsers ?? 0);               // NEW
-        setTotalMembers(sd.totalMembers ?? 0);
-        setMyReferralJoined(sd.myReferralJoined ?? 0);
-        setTotalEarning(sd.totalEarning ?? 0);
-        setMyPurchases(sd.myPurchases ?? 0);
-        setMyRefCode(sd.myRefCode ?? "");
-        setTeam(teamRes.data?.data ?? []);
-      } catch (e) {
-        console.error("Dashboard load error:", e);
-      } finally {
-        if (mounted) setLoading(false);
+      if (!mounted) return;
+
+      const sd = statsRes.data?.data || {};
+      setTotalUsers(sd.totalUsers ?? 0);
+      setTotalMembers(sd.totalMembers ?? 0);
+      setMyReferralJoined(sd.myReferralJoined ?? 0);
+      setMyPurchases(sd.myPurchases ?? 0);
+      setMyRefCode(sd.myRefCode ?? "");
+      setTeam(teamRes.data?.data ?? []);
+
+      // STEP 2: Fetch total earnings using refCode (if available)
+      if (sd.myRefCode) {
+        const earnRes = await api.get(`/api/earnings/dashboard/${sd.myRefCode}`);
+        const totals = earnRes.data?.data?.totals || {};
+        const totalEarningValue =
+          (totals.pvCommission || 0) +
+          (totals.directIncome || 0) +
+          (totals.matchingIncome || 0);
+        setTotalEarning(totalEarningValue);
       }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    } catch (e) {
+      console.error("Dashboard load error:", e);
+    } finally {
+      if (mounted) setLoading(false);
+    }
+  })();
+  return () => {
+    mounted = false;
+  };
+}, []);
 
   return (
     <div>

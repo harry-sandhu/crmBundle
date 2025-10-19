@@ -1,7 +1,7 @@
 import User from "../models/User";
 import Bundle from "../models/Bundle";
 import Product from "../models/Product";
-
+import { Request, Response } from "express";
 // Get all users (optionally filter by active)
 export const getUsers = async (req, res) => {
   const { active } = req.query;
@@ -71,3 +71,67 @@ export const deleteProduct = async (req, res) => {
   res.json({ message: "Product deleted" });
 };
 
+
+
+
+/** PATCH /api/users/:refCode/active */
+export const updateUserActiveStatus = async (req: Request, res: Response) => {
+  try {
+    const { refCode } = req.params;
+    const { active } = req.body;
+
+    if (typeof active !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "The 'active' field must be a boolean (true or false).",
+      });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { refCode },
+      { active },
+      { new: true }
+    ).select("name email phone refCode active");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found for the given referral code.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${active ? "activated" : "deactivated"} successfully.`,
+      data: user,
+    });
+  } catch (err: any) {
+    console.error("💥 Error updating active status:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating active status.",
+      error: err.message,
+    });
+  }
+};
+
+export const initializeActiveField = async (req: Request, res: Response) => {
+  try {
+    const result = await User.updateMany(
+      { active: { $exists: false } }, // only those missing field
+      { $set: { active: true } }      // default to active
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `✅ Active field initialized for ${result.modifiedCount} users.`,
+    });
+  } catch (err: any) {
+    console.error("💥 Error initializing active field:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while initializing active field.",
+      error: err.message,
+    });
+  }
+};

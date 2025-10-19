@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../utils/api";
+import api from "../utils/api"; // ✅ use api.ts (not axios)
 import ReactFlow, {
   Background,
   Controls,
@@ -17,6 +17,7 @@ interface TreeNode {
   email: string;
   phone?: string | null;
   refCode: string;
+  active?: boolean;
   children: TreeNode[];
 }
 
@@ -30,9 +31,9 @@ Modal.setAppElement("#root");
 
 // ----------------- Component -----------------
 export default function MyReferralTree() {
-  const [fullTree, setFullTree] = useState<TreeNode | null>(null); // full tree data
-  const [currentRoot, setCurrentRoot] = useState<TreeNode | null>(null); // current node being shown
-  const [history, setHistory] = useState<TreeNode[]>([]); // stack for navigation
+  const [fullTree, setFullTree] = useState<TreeNode | null>(null);
+  const [currentRoot, setCurrentRoot] = useState<TreeNode | null>(null);
+  const [history, setHistory] = useState<TreeNode[]>([]);
   const [nodes, setNodes] = useState<Node<TreeNode>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [selected, setSelected] = useState<TreeNode | null>(null);
@@ -45,7 +46,7 @@ export default function MyReferralTree() {
   const localUser = localStorage.getItem("userInfo");
   const refCode = localUser ? JSON.parse(localUser).refCode : null;
 
-  // ✅ Fetch once, based on logged-in user's referral code
+  // ✅ Fetch referral tree
   useEffect(() => {
     if (!refCode) {
       setError("No referral code found in local storage.");
@@ -55,7 +56,7 @@ export default function MyReferralTree() {
 
     const fetchTree = async () => {
       try {
-        const res = await axios.get<ApiResponse>(`/api/tree/${refCode}`);
+        const res = await api.get<ApiResponse>(`/api/tree/${refCode}?mode=bulk`);
         if (res.data.success) {
           const tree = res.data.data;
           setFullTree(tree);
@@ -75,7 +76,7 @@ export default function MyReferralTree() {
     fetchTree();
   }, [refCode]);
 
-  // ✅ Handle click on node (shows its subtree)
+  // ✅ Handle node click
   const handleNodeClick = (nodeData: TreeNode) => {
     if (!nodeData.children || nodeData.children.length === 0) {
       setSelected(nodeData);
@@ -89,7 +90,7 @@ export default function MyReferralTree() {
     setEdges(edges);
   };
 
-  // ✅ Back navigation to previous subtree
+  // ✅ Back navigation
   const handleBack = () => {
     if (history.length === 0) return;
     const prev = history[history.length - 1];
@@ -98,6 +99,28 @@ export default function MyReferralTree() {
     const { nodes, edges } = convertToFlow(prev);
     setNodes(nodes);
     setEdges(edges);
+  };
+
+  // ✅ Toggle Active Status
+  const handleToggleActive = async (node: TreeNode, newStatus: boolean) => {
+    try {
+      await api.patch(`/api/users/${node.refCode}/active`, { active: newStatus });
+
+      // Update modal state
+      setSelected((prev) => (prev ? { ...prev, active: newStatus } : prev));
+
+      // Update node visuals in tree
+      setNodes((nodes) =>
+        nodes.map((n) =>
+          n.id === node.refCode
+            ? { ...n, data: { ...n.data, active: newStatus } }
+            : n
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update active status", err);
+      alert("Failed to update active status. Please try again.");
+    }
   };
 
   if (loading)
@@ -138,7 +161,7 @@ export default function MyReferralTree() {
         <Controls />
       </ReactFlow>
 
-      {/* Modal for Node Info */}
+      {/* Modal */}
       {selected && (
         <Modal
           isOpen={!!selected}
@@ -152,6 +175,26 @@ export default function MyReferralTree() {
           <p className="text-gray-600 text-xs mt-2 font-mono">
             Ref Code: {selected.refCode}
           </p>
+
+          {/* ✅ Toggle */}
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Active Status:</span>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <span
+                className={`text-sm ${
+                  selected.active ? "text-green-700" : "text-red-500"
+                }`}
+              >
+                {selected.active ? "Active" : "Inactive"}
+              </span>
+              <input
+                type="checkbox"
+                checked={selected.active ?? false}
+                onChange={(e) => handleToggleActive(selected, e.target.checked)}
+                className="w-5 h-5 accent-green-600"
+              />
+            </label>
+          </div>
 
           <button
             onClick={() => setSelected(null)}
@@ -175,7 +218,7 @@ function convertToFlow(root: TreeNode): { nodes: Node<TreeNode>[]; edges: Edge[]
       id: node.refCode,
       position: { x, y },
       data: node,
-      type: "custom",
+      type: "custom", // use CustomReferralNode
     });
 
     if (!node.children || node.children.length === 0) return;
@@ -185,7 +228,7 @@ function convertToFlow(root: TreeNode): { nodes: Node<TreeNode>[]; edges: Edge[]
 
     node.children.forEach((child, index) => {
       const childX = x + offset + index * spacing;
-      const childY = y + 150;
+      const childY = y + 180;
       edges.push({
         id: `${node.refCode}->${child.refCode}`,
         source: node.refCode,

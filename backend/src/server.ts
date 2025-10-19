@@ -21,6 +21,7 @@ import adminMemberSearch from "./routes/AdminRoutes";
 import adminMemberDetail from "./routes/AdminRoutes";
 import adminProducts from "./routes/AdminRoutes";
 import productsPublic from "./routes/productRoutes";
+import userRoutes from "./routes/userRoutes";
 
 dotenv.config();
 const app = express();
@@ -32,7 +33,7 @@ const PORT = process.env.PORT || 3000;
 app.use(
   cors({
     origin: "*", // ✅ Allow all origins
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -73,6 +74,7 @@ app.use("/auth", authRoutes);
 // app.use("/Superadmin", superAdminRoutes);
 app.use("/api", treeRoutes);
 app.use("/api/me", meRoutes);
+app.use("/api", userRoutes);
 app.use("/api", orderRoutes);
 app.use("/api/earnings", earningsRoutes);
 app.use("/api/admin/earnings", adminEarningsRoutes);
@@ -90,6 +92,10 @@ import adminProductsUpload from "./routes/AdminProductUpload";
 import adminOrders from "./routes/AdminOrderRoutes";
 // ... your existing app setup and middlewares
 import adminProductConfigure from "./routes/adminProductsConfigure"
+import adminSummaryRoutes from "./routes/adminSummaryRoutes";
+app.use("/api", adminSummaryRoutes);
+
+
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api", adminProductsUpload);
 app.use("/api", adminProductConfigure);

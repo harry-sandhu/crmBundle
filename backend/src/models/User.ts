@@ -10,7 +10,9 @@ export interface IUser extends Document {
   refCode: string;              // unique referral code
   referredBy?: string | null;   // parent's refCode
   ancestors?: string[];         // all ancestors up to root
-  regamount?: number;
+  regamount: number;            // registration amount
+  active: boolean;              // ✅ new field — user active/inactive status
+
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt?: Date;
@@ -20,26 +22,42 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true, trim: true },
-    // Keep unique + index here, remove duplicate schema.index below
+
+    // Keep unique + index here (Mongoose 7 handles this cleanly)
     email: { type: String, required: true, unique: true, lowercase: true, index: true },
-    password: { type: String, required: true,select:true },
+
+    password: { type: String, required: true, select: true },
+
     phone: { type: String, default: null },
+
     isVerified: { type: Boolean, default: true },
-    // Keep unique here, remove duplicate schema.index below
+
+    // Each user has their unique referral code
     refCode: { type: String, required: true, unique: true, index: true },
-    referredBy: { type: String, default: null, index: true }, // index for direct referrals
-    ancestors: [{ type: String, index: true }],               // index for descendant queries
+
+    // Code of the user who referred this one (parent node)
+    referredBy: { type: String, default: null, index: true },
+
+    // All ancestor referral codes (used for descendant tree queries)
+    ancestors: [{ type: String, index: true }],
+
+    // Registration amount (can be used for earnings or activation)
     regamount: { type: Number, required: true },
+
+    // ✅ New: Whether the user is active or deactivated
+    active: { type: Boolean, default: true, index: true },
+
+    // Reset password fields (optional)
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );
 
-// Remove these duplicates to avoid warnings:
-// UserSchema.index({ email: 1 });
-// UserSchema.index({ refCode: 1 });
-// UserSchema.index({ referredBy: 1 });
-// UserSchema.index({ ancestors: 1 });
+// ⚡ Additional useful indexes
+UserSchema.index({ refCode: 1 });
+UserSchema.index({ referredBy: 1 });
+UserSchema.index({ ancestors: 1 });
+UserSchema.index({ active: 1 });
 
 export default mongoose.model<IUser>("User", UserSchema);
