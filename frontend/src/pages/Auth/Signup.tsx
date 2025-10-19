@@ -110,7 +110,7 @@ export default function Signup() {
         {/* Header Section */}
         <div className="mb-6 flex flex-col items-center">
           <img
-            src="/finallogo.png"
+            src="/ourlogo.jpeg"
             alt="Logo"
             className="h-20 w-20 mb-3 rounded-full shadow-md bg-white/90 border-4 border-white"
           />

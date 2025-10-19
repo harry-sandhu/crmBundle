@@ -4,35 +4,36 @@ import { motion } from "framer-motion";
 export default function Home() {
   const leaders = [
     {
-      name: "Rajesh Kumar",
-      role: "Founder & Visionary Leader",
-      img: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=600",
+      name: "Vijay Kumar",
+      role: "Founder &  Leader",
+      img:  "../../public/vijay.jpeg"
+,
     },
     {
-      name: "Anjali Mehta",
-      role: "Co-Founder & Marketing Head",
-      img: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600",
+      name: "Virendra Kumar",
+      role: "Founder & Leader",
+      img: "../../public/Virendra.jpeg"
     },
-    {
-      name: "Vivek Sharma",
-      role: "Operations & Network Director",
-      img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=600",
-    },
+    // {
+    //   name: "Vivek Sharma",
+    //   role: "Operations & Network Director",
+    //   img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=600",
+    // },
   ];
 
   const testimonials = [
     {
-      name: "Rohit Sinha",
+      name: "Virendra Kumar",
       feedback:
         "GrowLifeSuprimo has given me financial confidence and a community that supports real growth!",
     },
     {
-      name: "Priya Verma",
+      name: "Vijay Kumar",
       feedback:
         "I started small, but within months I built a strong team. The system really works!",
     },
     {
-      name: "Karan Patel",
+      name: "Raj",
       feedback:
         "This company isn’t just MLM — it’s mentorship and empowerment combined.",
     },

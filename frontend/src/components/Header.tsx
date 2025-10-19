@@ -16,7 +16,7 @@ export default function Header() {
       {/* Left side — Logo + Title */}
       <div className="flex items-center gap-3">
         <img
-          src="/finallogo.png" // ✅ Use absolute path (public/finallogo.png)
+          src="/ourlogo.jpeg" // ✅ Use absolute path (public/finallogo.png)
           alt="Logo"
           className="h-10 w-10 rounded-full"
         />

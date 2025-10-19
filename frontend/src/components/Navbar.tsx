@@ -183,7 +183,7 @@ export default function Navbar({
         className="flex items-center gap-2 cursor-pointer"
         onClick={() => navigate("/catalog")}
       >
-        <img src="/finallogo.png" alt="Logo" className="h-10 w-10 rounded-full" />
+        <img src="/ourlogo.jpeg" alt="Logo" className="h-10 w-10 rounded-full" />
         <h1 className="text-lg font-extrabold text-green-700">GrowLifeSuprimo</h1>
       </div>
 

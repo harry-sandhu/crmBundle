@@ -24,10 +24,10 @@ export default function Contact() {
             <li>
               <strong>Email:</strong>{" "}
               <a
-                href="mailto:support@growlifesuprimo.com"
+                href="mailto:growlifesupremo2025@gmail.com"
                 className="text-green-600 hover:underline"
               >
-                support@growlifesuprimo.com
+                growlifesupremo2025@gmail.com
               </a>
             </li>
             <li>

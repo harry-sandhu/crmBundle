@@ -292,7 +292,7 @@ export default function Login() {
         {/* Left Side */}
         <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-300 to-green-300 relative">
           <img
-            src="/finallogo.png"
+            src="/ourlogo.jpeg"
             alt="Logo"
             className="h-28 w-auto mb-8 drop-shadow-xl rounded-full border-4 border-white bg-white/90"
             style={{ boxShadow: "0 6px 32px 0 rgba(60,180,75,0.22)" }}
