@@ -6,13 +6,13 @@ export default function Home() {
     {
       name: "Vijay Kumar",
       role: "Founder &  Leader",
-      img:  "../../public/Vijay.png"
+      img:  "/Vijay.png"
 ,
     },
     {
       name: "Virendra Kumar",
       role: "Founder & Leader",
-      img: "../../public/Virendra.jpeg"
+      img: "/Virendra.jpeg"
     },
     // {
     //   name: "Vivek Sharma",
