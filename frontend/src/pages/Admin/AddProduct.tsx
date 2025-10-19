@@ -104,7 +104,7 @@ export default function AddProduct() {
       }
       form.append("imageFile", file);
 
-      const res = await api.post<CreateProductResponse>("/admin/products", form, {
+      const res = await api.post<CreateProductResponse>("/api/admin/products", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
