@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import axios from "../utils/api";
 import AddMemberPopup from "../components/AddMemberPopup";
 
@@ -52,7 +52,7 @@ export default function TeamSummary() {
 
   useEffect(() => {
     fetchTree();
-  }, [refCode]);
+  }, );
 
   const flattenTree = (node: TreeNode): TreeNode[] => {
     let result = [node];
