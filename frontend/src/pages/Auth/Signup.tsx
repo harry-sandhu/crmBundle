@@ -1,6 +1,5 @@
-// frontend/src/pages/auth/Signup.tsx
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import axios from "../../utils/api";
 import { getApiErrorMessage } from "../../utils/handleApiError";
 
@@ -24,11 +23,23 @@ export default function Signup() {
   const [mobile, setMobile] = useState("");
   const [referenceId, setReferenceId] = useState("");
   const [password, setPassword] = useState("");
-  const [regamount, setRegAmount] = useState<number | "">(""); // ✅ Added state
+  const [regamount, setRegAmount] = useState<number | "">("");
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isReferralLocked, setIsReferralLocked] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ Read referral code from URL if present (e.g. /signup?ref=GROLIFE-A-000001)
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const referralFromUrl = queryParams.get("ref");
+    if (referralFromUrl) {
+      setReferenceId(referralFromUrl.trim().toUpperCase());
+      setIsReferralLocked(true); // make field read-only
+    }
+  }, [location.search]);
 
   // ✅ Referral ID format check (must match backend pattern)
   const isValidReferralCode = (code: string) => {
@@ -70,7 +81,7 @@ export default function Signup() {
         phone: mobile,
         password,
         referralCode: referenceId,
-        regamount, // ✅ Send numeric amount
+        regamount,
       });
 
       if (res.data.success && res.data.data) {
@@ -157,20 +168,28 @@ export default function Signup() {
             onChange={(e) =>
               setRegAmount(e.target.value === "" ? "" : Number(e.target.value))
             }
-            placeholder="Amount"
+            placeholder="Registration Amount"
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
           />
 
+          {/* ✅ Referral Code Field (auto-filled if ?ref= provided) */}
           <input
             type="text"
             required
             value={referenceId}
             onChange={(e) =>
+              !isReferralLocked &&
               setReferenceId(e.target.value.trim().toUpperCase())
             }
             placeholder="Referral Code (e.g., GROLIFE-A-000001)"
-            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
+            readOnly={isReferralLocked}
+            className={`block px-4 py-3 w-full rounded-lg border focus:ring-2 focus:ring-yellow-400 ${
+              isReferralLocked
+                ? "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                : "border-green-200"
+            }`}
           />
+
           <input
             type="password"
             required
@@ -204,7 +223,7 @@ export default function Signup() {
 
         {/* Footer Links */}
         <div className="flex justify-between mt-5 text-sm">
-          <Link to="/" className="text-green-700 hover:underline">
+          <Link to="/login" className="text-green-700 hover:underline">
             Already have an account?
           </Link>
         </div>
