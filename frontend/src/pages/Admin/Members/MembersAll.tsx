@@ -1,4 +1,3 @@
-// src/pages/Admin/Members/MembersAll.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import api from "../../../utils/api";
 import axios, { AxiosError } from "axios";
@@ -48,7 +47,12 @@ export default function MembersAll() {
   const [limit] = useState(50);
   const [total, setTotal] = useState(0);
 
-  const [hover, setHover] = useState<HoverCardState>({ visible: false, x: 0, y: 0, member: null });
+  const [hover, setHover] = useState<HoverCardState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    member: null,
+  });
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch members (server-side search + pagination)
@@ -57,7 +61,9 @@ export default function MembersAll() {
     (async () => {
       try {
         setLoading(true);
-        const res = await api.get<ApiResponse>("/admin/members", { params: { q, page, limit } });
+        const res = await api.get<ApiResponse>("/admin/members", {
+          params: { q, page, limit },
+        });
         if (cancel) return;
         if (res.data.ok) {
           setData(res.data.data);
@@ -71,7 +77,8 @@ export default function MembersAll() {
         if (axios.isAxiosError(error)) {
           const axErr = error as AxiosError<ApiError>;
           const status = axErr.response?.status ?? "network";
-          const message = axErr.response?.data?.message ?? axErr.message ?? "Request failed";
+          const message =
+            axErr.response?.data?.message ?? axErr.message ?? "Request failed";
           setErr(`Failed to load members (${status}): ${message}`);
         } else {
           setErr("Failed to load members");
@@ -85,7 +92,7 @@ export default function MembersAll() {
     };
   }, [q, page, limit]);
 
-  // Optional client refinement (kept for instant filtering UX)
+  // Optional client refinement
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return data;
@@ -103,7 +110,7 @@ export default function MembersAll() {
     setPage(1);
   }
 
-  // Toggle card on click
+  // Toggle hover card
   function toggleCard(e: React.MouseEvent, m: Member) {
     const offset = 12;
     setHover((h) => {
@@ -118,7 +125,7 @@ export default function MembersAll() {
     setHover({ visible: false, x: 0, y: 0, member: null });
   }
 
-  // Close on Escape and outside click
+  // Close card events
   useEffect(() => {
     function onEsc(ev: KeyboardEvent) {
       if (ev.key === "Escape") hideCard();
@@ -135,7 +142,6 @@ export default function MembersAll() {
     };
   }, []);
 
-  // Optional: close on list scroll (prevents card floating away)
   useEffect(() => {
     const el = boxRef.current;
     if (!el) return;
@@ -146,10 +152,22 @@ export default function MembersAll() {
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
+  // ✅ Toggle Active/Inactive
+  const handleToggleActive = async (m: Member) => {
+    const newStatus = m.status === "active" ? false : true;
+    try {
+      await api.patch(`/api/users/${m.refCode}/active`, { active: newStatus });
+      setData((prev) =>
+        prev.map((u) =>
+          u.id === m.id ? { ...u, status: newStatus ? "active" : "inactive" } : u
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+      alert("Failed to update status. Please try again.");
+    }
+  };
 
-  //add active , inactive toggle button here
-
-  
   return (
     <div className="relative">
       {/* Controls */}
@@ -191,15 +209,20 @@ export default function MembersAll() {
                     <div className="text-sm text-gray-600">{m.email}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span
-                      className={`px-2 py-1 rounded text-xs ${
+                    {/* ✅ Toggle Active/Inactive Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleActive(m);
+                      }}
+                      className={`px-2 py-1 rounded text-xs font-medium ${
                         m.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-700"
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
                     >
-                      {m.status}
-                    </span>
+                      {m.status === "active" ? "Active" : "Inactive"}
+                    </button>
                     <span className="text-xs text-gray-500">
                       Joined {new Date(m.joinedAt).toLocaleDateString()}
                     </span>
@@ -208,7 +231,9 @@ export default function MembersAll() {
                 <div className="text-xs text-gray-500 mt-1">
                   Ref: {m.refCode}
                   {m.referredBy ? ` • Parent: ${m.referredBy}` : ""}
-                  {typeof m.regamount === "number" ? ` • Reg ₹${m.regamount}` : ""}
+                  {typeof m.regamount === "number"
+                    ? ` • Reg ₹${m.regamount}`
+                    : ""}
                 </div>
               </li>
             ))}
@@ -237,7 +262,7 @@ export default function MembersAll() {
         </button>
       </div>
 
-      {/* Click-activated profile card */}
+      {/* Hover Profile Card */}
       {hover.visible && hover.member && (
         <div
           className="fixed z-50 w-80 rounded-lg border bg-white shadow-lg p-3"
@@ -246,7 +271,9 @@ export default function MembersAll() {
           <div className="text-sm text-gray-500 mb-1">Member Profile</div>
           <div className="font-semibold text-gray-900">{hover.member.name}</div>
           <div className="text-gray-700">{hover.member.email}</div>
-          {hover.member.phone && <div className="text-gray-700">{hover.member.phone}</div>}
+          {hover.member.phone && (
+            <div className="text-gray-700">{hover.member.phone}</div>
+          )}
           <div className="mt-2 flex items-center gap-2">
             <span
               className={`px-2 py-1 rounded text-xs ${
@@ -264,7 +291,9 @@ export default function MembersAll() {
           <div className="mt-2 text-xs text-gray-600">
             RefCode: {hover.member.refCode}
             {hover.member.referredBy ? ` • Parent: ${hover.member.referredBy}` : ""}
-            {typeof hover.member.regamount === "number" ? ` • Reg ₹${hover.member.regamount}` : ""}
+            {typeof hover.member.regamount === "number"
+              ? ` • Reg ₹${hover.member.regamount}`
+              : ""}
           </div>
           <div className="mt-3 flex justify-end">
             <button className="text-sm text-gray-600 hover:text-gray-900" onClick={hideCard}>
