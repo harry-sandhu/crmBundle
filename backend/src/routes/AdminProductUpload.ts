@@ -8,9 +8,17 @@ import { verifyToken } from "../middleware/authMiddleware";
 
 const router = Router();
 
-// Ensure uploads directory exists
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// 🧩 Use writable path depending on environment
+const isVercel = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+const UPLOAD_DIR = isVercel ? "/tmp/uploads" : path.join(process.cwd(), "uploads");
+
+// 🧱 Ensure directory exists (only for local or /tmp)
+try {
+  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+} catch (err: any) {
+  console.warn("⚠️ Unable to create uploads folder:", err.message);
+}
+
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
@@ -20,6 +28,7 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${base}${ext}`);
   },
 });
+
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
@@ -29,7 +38,7 @@ const upload = multer({
   },
 });
 
-// POST /api/admin/products (multipart)
+// 📦 POST /api/admin/products (multipart/form-data)
 router.post("/admin/products", verifyToken, upload.single("imageFile"), async (req, res) => {
   try {
     const { name, description, price, category, mrp, dp } = req.body || {};
@@ -40,7 +49,7 @@ router.post("/admin/products", verifyToken, upload.single("imageFile"), async (r
       return res.status(400).json({ ok: false, message: "Image file is required" });
     }
 
-    // Build absolute URL to the uploaded image
+    // 🖼️ Build image URL (note: /tmp uploads are ephemeral on Vercel)
     const host = req.get("host");
     const protocol = req.protocol;
     const imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
@@ -55,9 +64,10 @@ router.post("/admin/products", verifyToken, upload.single("imageFile"), async (r
       dp: Number(dp),
     });
 
-    return res.status(201).json({ ok: true, data: doc });
-  } catch (e) {
-    return res.status(500).json({ ok: false, message: "Failed to create product" });
+    res.status(201).json({ ok: true, data: doc });
+  } catch (e: any) {
+    console.error("❌ Product upload failed:", e);
+    res.status(500).json({ ok: false, message: "Failed to create product" });
   }
 });
 

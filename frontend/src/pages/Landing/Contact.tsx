@@ -36,11 +36,11 @@ export default function Contact() {
                 href="tel:+919876543210"
                 className="text-green-600 hover:underline"
               >
-                +91 98765 43210
+                +91 92504 02066 & +91 63927 45409
               </a>
             </li>
             <li>
-              <strong>Address:</strong> Hyderabad, Telangana, India
+              <strong>Address:</strong> Prayagraj, Uttar Pradeh, India
             </li>
           </ul>
         </div>

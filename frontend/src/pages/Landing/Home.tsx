@@ -6,7 +6,7 @@ export default function Home() {
     {
       name: "Vijay Kumar",
       role: "Founder &  Leader",
-      img:  "../../public/vijay.jpeg"
+      img:  "../../public/Vijay.png"
 ,
     },
     {
