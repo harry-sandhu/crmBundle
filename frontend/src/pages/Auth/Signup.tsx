@@ -23,7 +23,7 @@ export default function Signup() {
   const [mobile, setMobile] = useState("");
   const [referenceId, setReferenceId] = useState("");
   const [password, setPassword] = useState("");
-  const [regamount, setRegAmount] = useState<number | "">("");
+  // const [regamount, setRegAmount] = useState<number | "">("");
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,11 +68,11 @@ export default function Signup() {
     }
 
     // ⚙️ Validate amount
-    if (!regamount || regamount <= 0) {
-      setErr("Please enter a valid registration amount.");
-      setLoading(false);
-      return;
-    }
+    // if (!regamount || regamount <= 0) {
+    //   setErr("Please enter a valid registration amount.");
+    //   setLoading(false);
+    //   return;
+    // }
 
     try {
       const res = await axios.post<SignupResponse>("/auth/signup", {
@@ -81,11 +81,11 @@ export default function Signup() {
         phone: mobile,
         password,
         referralCode: referenceId,
-        regamount,
+        // regamount,
       });
 
       if (res.data.success && res.data.data) {
-        const { email, name, refCode, regamount } = res.data.data;
+        const { email, name, refCode } = res.data.data;
 
         // ✅ Save to localStorage
         localStorage.setItem(
@@ -94,13 +94,13 @@ export default function Signup() {
             email,
             name,
             refCode,
-            regamount,
+            // regamount,
           })
         );
 
         // ✅ Success message
         setMsg(
-          `Signup successful! Your Referral ID: ${refCode}. Registration Amount: ₹${regamount}`
+          `Signup successful! Your Referral ID: ${refCode}. `
         );
 
         // Redirect after a short delay
@@ -161,7 +161,7 @@ export default function Signup() {
           />
 
           {/* ✅ Registration Amount Field */}
-          <input
+          {/* <input
             type="number"
             required
             value={regamount}
@@ -170,7 +170,7 @@ export default function Signup() {
             }
             placeholder="Registration Amount"
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
-          />
+          /> */}
 
           {/* ✅ Referral Code Field (auto-filled if ?ref= provided) */}
           <input
