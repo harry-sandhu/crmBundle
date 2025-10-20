@@ -99,7 +99,7 @@ export default function Profile() {
         <InfoCard label="Email" value={profile.email} />
         <InfoCard label="Phone" value={profile.phone || "—"} />
         <InfoCard label="Verified" value={profile.isVerified ? "Yes" : "No"} />
-        <InfoCard label="My Referral ID" value={profile.refCode} mono />
+        <InfoCard label="My Sponsor ID" value={profile.refCode} mono />
         <InfoCard label="Referred By (ID)" value={profile.referredBy || "—"} mono />
         <InfoCard label="Referrer Name" value={profile.referrerName || "—"} />
         <InfoCard

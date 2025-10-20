@@ -80,7 +80,7 @@ export default function DashboardHome() {
       <div className="mt-5 bg-white border rounded-xl p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm text-gray-500">My Referral Code</p>
+            <p className="text-sm text-gray-500">My Sponsor ID</p>
             <p className="text-lg font-semibold text-green-700">{myRefCode || "-"}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export default function DashboardHome() {
       {/* Team table */}
       <div className="mt-5 bg-white border rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">My Team (via my users’ referral codes)</h2>
+          <h2 className="text-lg font-bold text-gray-800">My Team (via my Sponsor ID)</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">

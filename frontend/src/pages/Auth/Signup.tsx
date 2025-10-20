@@ -181,7 +181,7 @@ export default function Signup() {
               !isReferralLocked &&
               setReferenceId(e.target.value.trim().toUpperCase())
             }
-            placeholder="Referral Code (e.g., GROLIFE-A-000001)"
+            placeholder="Sponsor ID (e.g., GROLIFE-A-000001)"
             readOnly={isReferralLocked}
             className={`block px-4 py-3 w-full rounded-lg border focus:ring-2 focus:ring-yellow-400 ${
               isReferralLocked
