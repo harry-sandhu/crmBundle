@@ -12,7 +12,7 @@ interface BuyerInfo {
 interface EarningRecord {
   _id: string;
   orderId: string;
-  type: "pv" | "direct" | "matching";
+  type: "pv" | "direct" | "matching" | "sponsorMatching"; // 🧩 added new type
   amount: number;
   level?: number;
   createdAt: string;
@@ -23,6 +23,7 @@ interface EarningsDetailsData {
   pv: EarningRecord[];
   direct: EarningRecord[];
   matching: EarningRecord[];
+  sponsorMatching: EarningRecord[]; // 🧩 added new group
 }
 
 export default function EarningsDetails() {
@@ -121,9 +122,11 @@ export default function EarningsDetails() {
       <h2 className="text-2xl font-bold text-green-700 mb-4">
         My Earnings Details
       </h2>
+
       {renderTable(data.pv, "PV Commission", "green")}
       {renderTable(data.direct, "Direct Income", "blue")}
       {renderTable(data.matching, "Matching Income", "purple")}
+      {renderTable(data.sponsorMatching, "Sponsor Matching Bonus", "amber")} {/* 🧩 new */}
     </div>
   );
 }

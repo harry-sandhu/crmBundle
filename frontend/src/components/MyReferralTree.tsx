@@ -17,6 +17,7 @@ interface TreeNode {
   email: string;
   phone?: string | null;
   refCode: string;
+  position?: "left" | "right" | null;
   active?: boolean;
   children: TreeNode[];
 }
@@ -175,6 +176,21 @@ export default function MyReferralTree() {
           <p className="text-gray-600 text-xs mt-2 font-mono">
             Ref Code: {selected.refCode}
           </p>
+
+          {/* ✅ Position display */}
+          {selected.position && (
+            <p
+              className={`mt-2 text-sm font-semibold ${
+                selected.position === "left"
+                  ? "text-blue-600"
+                  : selected.position === "right"
+                  ? "text-rose-600"
+                  : "text-gray-500"
+              }`}
+            >
+              🌐 Position: {selected.position.toUpperCase()}
+            </p>
+          )}
 
           {/* ✅ Toggle */}
           <div className="mt-4 flex items-center justify-between">

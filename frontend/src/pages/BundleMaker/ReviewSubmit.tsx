@@ -22,6 +22,11 @@ type ApiErrorShape = {
   message?: string;
 };
 
+const localUser = localStorage.getItem("userInfo");
+const userInfo = localUser ? JSON.parse(localUser) : null;
+const refCode = userInfo?.refCode || null;
+
+
 function getErrMessage(e: unknown): string {
   const err = e as ApiErrorShape;
   return err?.response?.data?.message || err?.message || "Failed to submit bundle";
@@ -104,6 +109,7 @@ export default function ReviewBundle() {
       if (submitPV > 0) pushPV(submitPV);
 
       const payload = {
+        refCode,
         items: items.map((i) => ({
           productId: i.productId,
           title: i.title,

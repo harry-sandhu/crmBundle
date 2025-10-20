@@ -1,4 +1,3 @@
-// src/pages/EarningsDashboard.tsx
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 import {
@@ -21,12 +20,14 @@ interface EarningsTrends {
   pvTrend: TrendPoint[];
   directTrend: TrendPoint[];
   matchingTrend: TrendPoint[];
+  sponsorMatchingTrend: TrendPoint[]; // 🧩 new
 }
 
 interface EarningsTotals {
   pvCommission: number;
   directIncome: number;
   matchingIncome: number;
+  sponsorMatchingBonus: number; // 🧩 new
 }
 
 interface DashboardData {
@@ -77,6 +78,11 @@ export default function EarningsDashboard() {
     { title: "PV Commission", color: "#16a34a", data: trends.pvTrend },
     { title: "Direct Income", color: "#2563eb", data: trends.directTrend },
     { title: "Matching Income", color: "#9333ea", data: trends.matchingTrend },
+    {
+      title: "Sponsor Matching Bonus",
+      color: "#f59e0b",
+      data: trends.sponsorMatchingTrend,
+    },
   ];
 
   return (
@@ -84,7 +90,7 @@ export default function EarningsDashboard() {
       <h2 className="text-2xl font-bold text-green-700 mb-4">Earnings Dashboard</h2>
 
       {/* Summary cards */}
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-4 gap-4">
         <SummaryCard
           title="PV Commission"
           color="green"
@@ -100,10 +106,15 @@ export default function EarningsDashboard() {
           color="purple"
           amount={totals.matchingIncome}
         />
+        <SummaryCard
+          title="Sponsor Matching Bonus"
+          color="amber"
+          amount={totals.sponsorMatchingBonus}
+        />
       </div>
 
       {/* Charts */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
         {charts.map((c) => (
           <div key={c.title} className="bg-white p-4 rounded-lg border shadow-sm">
             <h3 className="font-semibold mb-2">{c.title}</h3>

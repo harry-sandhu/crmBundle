@@ -1,4 +1,3 @@
-// frontend/src/pages/Landing/TeamSummary.tsx
 import { useEffect, useState } from "react";
 import axios from "../utils/api";
 
@@ -7,6 +6,7 @@ interface TreeNode {
   email: string;
   phone?: string | null;
   refCode: string;
+  position?: "left" | "right" | null;
   children: TreeNode[];
   [key: string]: unknown;
 }
@@ -26,7 +26,7 @@ export default function TeamSummary() {
   useEffect(() => {
     const fetchTree = async () => {
       try {
-        const res = await axios.get<ApiResponse>("/api/tree/GROLIFE-ROOT-000000");
+        const res = await axios.get<ApiResponse>("/api/tree/GROLIFE-ROOT-000000?mode=bulk");
         if (res.data.success && res.data.data) {
           const flat = flattenTree(res.data.data);
           setTableData(flat);
@@ -58,7 +58,8 @@ export default function TeamSummary() {
   if (!tableData.length)
     return <div className="text-center text-gray-500 mt-10">No data found.</div>;
 
-  const defaultColumns = ["name", "email", "phone", "refCode"];
+  // ✅ Include position in columns
+  const defaultColumns = ["name", "email", "phone", "refCode", "position"];
   const allKeys = Object.keys(tableData[0] || {});
   const columns = allKeys.filter((key) => defaultColumns.includes(key));
 
@@ -89,7 +90,18 @@ export default function TeamSummary() {
               >
                 <td className="px-3 py-2">{idx + 1}</td>
                 {columns.map((col) => (
-                  <td key={col} className="px-3 py-2">
+                  <td
+                    key={col}
+                    className={`px-3 py-2 ${
+                      col === "position"
+                        ? item.position === "left"
+                          ? "text-blue-600 font-semibold"
+                          : item.position === "right"
+                          ? "text-rose-600 font-semibold"
+                          : "text-gray-400 italic"
+                        : ""
+                    }`}
+                  >
                     {String(item[col] ?? "N/A")}
                   </td>
                 ))}
