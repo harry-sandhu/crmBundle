@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import Order from "../models/Order";
 import User from "../models/User";
-import { generateEarnings } from "../utils/earningCalculator";
+
+
 
 /**
  * POST /api/orders/submit
@@ -9,6 +10,7 @@ import { generateEarnings } from "../utils/earningCalculator";
  */
 export async function submitBundle(req: Request, res: Response) {
   try {
+    const { generateEarnings } = require("../utils/earningCalculator");
     const { refCode, items, notes } = req.body;
 
     if (!items?.length) {

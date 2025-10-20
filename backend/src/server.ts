@@ -5,23 +5,29 @@ import "./config/env";
 
 import express, { Request, Response } from "express";
 import cors from "cors";
-import authRoutes from "./routes/authRoutes";
-import connectDB from "./config/db";
 import dotenv from "dotenv";
-// import AdminRoutes from "./routes/AdminRoutes";
-// import superAdminRoutes from "./routes/superAdminRoutes";
+import path from "path";
+
+import connectDB from "./config/db";
+
+// ✅ Route imports
+import authRoutes from "./routes/authRoutes";
 import treeRoutes from "./routes/treeRoutes";
-import meRoutes from "./routes/me"
+import meRoutes from "./routes/me";
 import orderRoutes from "./routes/orders";
-import earningsRoutes from "./routes/earningRoutes"
+import earningsRoutes from "./routes/earningRoutes";
 import adminEarningsRoutes from "./routes/adminEarningsRoutes";
-import adminFixOrdersRoutes from "./routes/adminFixOrderRoutes"
+import adminFixOrdersRoutes from "./routes/adminFixOrderRoutes";
 import adminMembers from "./routes/AdminRoutes";
 import adminMemberSearch from "./routes/AdminRoutes";
 import adminMemberDetail from "./routes/AdminRoutes";
 import adminProducts from "./routes/AdminRoutes";
 import productsPublic from "./routes/productRoutes";
-import userRoutes from "./routes/userRoutes";
+import adminProductsUpload from "./routes/AdminProductUpload";
+import adminOrders from "./routes/AdminOrderRoutes";
+import adminProductConfigure from "./routes/adminProductsConfigure";
+import adminSummaryRoutes from "./routes/adminSummaryRoutes";
+import adminPositionRoutes from "./routes/adminPositionRoutes";
 
 dotenv.config();
 const app = express();
@@ -32,26 +38,18 @@ const PORT = process.env.PORT || 3000;
 // =======================================================
 app.use(
   cors({
-    origin: "*", // ✅ Allow all origins
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// ✅ Handle preflight requests manually (no wildcards)
+// ✅ Handle preflight requests manually
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
 
@@ -60,8 +58,12 @@ app.use((req, res, next) => {
 // =======================================================
 app.use(express.json());
 
-// ✅ Connect MongoDB
-connectDB();
+// ✅ Connect MongoDB only in runtime (skip during Vercel build)
+if (!process.env.VERCEL) {
+  connectDB();
+} else {
+  console.log("⏭️ Skipping MongoDB connection during Vercel build.");
+}
 
 // ✅ Test Route
 app.get("/", (req: Request, res: Response) => {
@@ -70,11 +72,8 @@ app.get("/", (req: Request, res: Response) => {
 
 // ✅ Routes
 app.use("/auth", authRoutes);
-// app.use("/admin", AdminRoutes);
-// app.use("/Superadmin", superAdminRoutes);
 app.use("/api", treeRoutes);
 app.use("/api/me", meRoutes);
-app.use("/api", userRoutes);
 app.use("/api", orderRoutes);
 app.use("/api/earnings", earningsRoutes);
 app.use("/api/admin/earnings", adminEarningsRoutes);
@@ -84,24 +83,14 @@ app.use("/", adminMemberSearch);
 app.use("/", adminMemberDetail);
 app.use("/api", adminProducts);
 app.use("/api", productsPublic);
-
-// src/app.ts (excerpt)
-import path from "path";
-
-import adminProductsUpload from "./routes/AdminProductUpload";
-import adminOrders from "./routes/AdminOrderRoutes";
-// ... your existing app setup and middlewares
-import adminProductConfigure from "./routes/adminProductsConfigure"
-import adminSummaryRoutes from "./routes/adminSummaryRoutes";
-import adminPositionRoutes from "./routes/adminPositionRoutes";
 app.use("/api/admin", adminPositionRoutes);
 app.use("/api", adminSummaryRoutes);
-
-
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api", adminProductsUpload);
 app.use("/api", adminProductConfigure);
 app.use("/api", adminOrders);
+
+// ✅ Static file serving
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // ✅ Start Server
 app.listen(PORT, () => {
