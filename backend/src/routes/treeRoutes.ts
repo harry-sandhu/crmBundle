@@ -1,11 +1,9 @@
-// backend/routes/treeRoutes.ts
 import express from "express";
-import { getReferralTree } from "../controllers/treeController";
+import { getReferralTree, getBinaryTree } from "../controllers/treeController";
 
 const router = express.Router();
 
-// GET /api/tree/:refCode → returns the entire referral tree
 router.get("/tree/:refCode", getReferralTree);
-
+router.get("/binary-tree/:refCode", getBinaryTree);
 
 export default router;

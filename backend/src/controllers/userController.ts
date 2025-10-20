@@ -135,3 +135,57 @@ export const initializeActiveField = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+export const assignRandomBinaryPositions = async (req: Request, res: Response) => {
+  try {
+    const users = await User.find({});
+    let updated = 0;
+    let skipped = 0;
+
+    for (const parent of users) {
+      // Skip root node (no referrer)
+      if (!parent.refCode) continue;
+
+      const children = await User.find({ referredBy: parent.refCode });
+      if (children.length === 0) continue;
+
+      // Reset all children’s positions first
+      for (const child of children) {
+        child.position = undefined as any;
+        await child.save();
+      }
+
+      // Randomly pick up to 2 children for left/right
+      const shuffled = children.sort(() => 0.5 - Math.random());
+      const left = shuffled[0];
+      const right = shuffled[1];
+
+      if (left) {
+        left.position = "left";
+        await left.save();
+        updated++;
+      }
+      if (right) {
+        right.position = "right";
+        await right.save();
+        updated++;
+      }
+
+      // If more than 2 children exist, others remain unassigned
+      if (children.length > 2) skipped += children.length - 2;
+    }
+
+    return res.json({
+      success: true,
+      message: `✅ Random binary positions assigned to ${updated} users. Skipped ${skipped} extras.`,
+    });
+  } catch (error: any) {
+    console.error("💥 Error assigning random positions:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to assign random positions",
+      error: error.message,
+    });
+  }
+};

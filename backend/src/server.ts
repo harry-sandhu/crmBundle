@@ -93,6 +93,8 @@ import adminOrders from "./routes/AdminOrderRoutes";
 // ... your existing app setup and middlewares
 import adminProductConfigure from "./routes/adminProductsConfigure"
 import adminSummaryRoutes from "./routes/adminSummaryRoutes";
+import adminPositionRoutes from "./routes/adminPositionRoutes";
+app.use("/api/admin", adminPositionRoutes);
 app.use("/api", adminSummaryRoutes);
 
 

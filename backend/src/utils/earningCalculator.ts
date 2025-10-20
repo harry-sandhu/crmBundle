@@ -1,55 +1,102 @@
+import User, { IUser } from "../models/User";
+import EarningRecord from "../models/EarningRecord";
 import { IOrder } from "../models/Order";
 
-// 1 PV = ₹1.2 conversion rate
+// 💰 Constants
 export const PV_RATE = 1.2;
-
-// Direct referral rates: 12% → 6% → 3% → 2% fallback for deeper ancestors
-export const REFERRAL_RATES = [0.12, 0.06, 0.03];
-export const REFERRAL_FALLBACK_RATE = 0.02;
-
-/**
- * 🔹 calculatePV(order)
- * Buyer earns PV based on total DP (₹1000 DP = 100 PV = ₹120)
- */
-export function calculatePV(order: IOrder) {
-  const totalDP = order.items.reduce((sum, i) => sum + i.dp * i.qty, 0);
-  const pv = Math.floor(totalDP / 1000) * 100; // round down to nearest 100 PV
-  const amount = pv * PV_RATE; // convert PV → money
-  return { totalDP, pv, amount };
-}
+export const DIRECT_PERCENT = 0.12;
+export const MATCH_PERCENT = 0.12;
+export const SPONSOR_MATCH_PERCENT = 1.0;
 
 /**
- * 🔹 calculateDirectIncome(order)
- * Parent (referredBy) gets 12% of child’s first order DP
+ * 🧮 generateEarnings(order)
+ * Creates EarningRecords for:
+ *  - PV (buyer)
+ *  - Direct (sponsor)
+ *  - Matching (binary)
+ *  - Sponsor Matching Bonus
  */
-export function calculateDirectIncome(order: IOrder) {
-  const totalDP = order.items.reduce((sum, i) => sum + i.dp * i.qty, 0);
-  const income = totalDP * 0.12;
-  return income;
-}
+export async function generateEarnings(order: IOrder) {
+  try {
+    // 1️⃣ Get buyer (use refCode directly because that’s your ID)
+    let buyer: IUser | null = await User.findOne({ refCode: order.refCode });
 
-/**
- * 🔹 calculateMatchingIncome(order, ancestors)
- * Every ancestor earns based on level:
- *   - 1st level (parent) → 12%
- *   - 2nd level (grandparent) → 6%
- *   - 3rd level → 3%
- *   - 4th+ → 2%
- */
-export function calculateMatchingIncome(order: IOrder, ancestors: string[]) {
-  const totalDP = order.items.reduce((sum, i) => sum + i.dp * i.qty, 0);
+    // Fallback (for older orders that don’t have refCode saved)
+    if (!buyer && order.userId) {
+      buyer = await User.findById(order.userId);
+    }
 
-  // Distribute earnings to each ancestor level
-  const matches = ancestors.map((ref, i) => {
-    const percent = REFERRAL_RATES[i] ?? REFERRAL_FALLBACK_RATE;
-    const income = totalDP * percent;
-    return {
-      ref,       // ancestor refCode
-      level: i + 1,
-      percent,
-      income,
-    };
-  });
+    if (!buyer) {
+      console.warn(`⚠️ No buyer found for order ${order._id}`);
+      return;
+    }
 
-  return matches;
+    const totalDP = order.items.reduce((sum, i) => sum + i.dp * i.qty, 0);
+    const pv = Math.floor(totalDP / 1000) * 100;
+    const pvAmount = pv * PV_RATE;
+
+    // 2️⃣ PV earning (buyer)
+    await EarningRecord.create({
+      userId: buyer.refCode,           // ⚡ use refCode as ID equivalent
+      refCode: buyer.refCode,
+      sourceUserId: buyer.refCode,
+      orderId: order.refCode,
+      type: "pv",
+      amount: pvAmount,
+      percent: PV_RATE * 100,
+    });
+
+    // 3️⃣ Sponsor Direct income
+    let sponsor: IUser | null = null;
+    if (buyer.referredBy) {
+      sponsor = await User.findOne({ refCode: buyer.referredBy });
+    }
+
+    if (sponsor) {
+      const directIncome = totalDP * DIRECT_PERCENT;
+      await EarningRecord.create({
+        userId: sponsor.refCode,
+        refCode: sponsor.refCode,
+        sourceUserId: buyer.refCode,
+        orderId: order.refCode,
+        type: "direct",
+        amount: directIncome,
+        percent: DIRECT_PERCENT * 100,
+      });
+
+      // 4️⃣ Matching income (binary)
+      const matchingIncome = totalDP * MATCH_PERCENT;
+      await EarningRecord.create({
+        userId: sponsor.refCode,
+        refCode: sponsor.refCode,
+        sourceUserId: buyer.refCode,
+        orderId: order.refCode,
+        type: "matching",
+        amount: matchingIncome,
+        percent: MATCH_PERCENT * 100,
+      });
+
+      // 5️⃣ Sponsor Matching bonus (100%)
+      let sponsorUpline: IUser | null = null;
+      if (sponsor.referredBy) {
+        sponsorUpline = await User.findOne({ refCode: sponsor.referredBy });
+      }
+
+      if (sponsorUpline) {
+        await EarningRecord.create({
+          userId: sponsorUpline.refCode,
+          refCode: sponsorUpline.refCode,
+          sourceUserId: sponsor.refCode,
+          orderId: order.refCode,
+          type: "sponsorMatching",
+          amount: matchingIncome,
+          percent: SPONSOR_MATCH_PERCENT * 100,
+        });
+      }
+    }
+
+    console.log(`✅ Earnings generated successfully for ${order.refCode}`);
+  } catch (err: any) {
+    console.error("❌ Error generating earnings:", err.message || err);
+  }
 }
