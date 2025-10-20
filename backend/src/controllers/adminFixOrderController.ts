@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import Order from "../models/Order";
 import User from "../models/User";
-import { generateEarnings } from "../utils/earningCalculator";
+
+
 
 /**
  * 🛠️ Admin Repair Controller
@@ -9,6 +10,7 @@ import { generateEarnings } from "../utils/earningCalculator";
  */
 export const repairOrderPV = async (req: Request, res: Response) => {
   try {
+    const { generateEarnings } = require("../utils/earningCalculator");
     const orders = await Order.find({});
     let updated = 0;
     let earningsGenerated = 0;
