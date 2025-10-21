@@ -11,7 +11,7 @@ interface UserRef {
 
 interface EarningRecord {
   userId?: UserRef;
-  type: "pv" | "direct" | "matching";
+  type: "pv" | "direct" | "matching" | "sponsorMatching"; // ✅ added sponsorMatching
   amount: number;
   createdAt: string;
 }
@@ -19,7 +19,13 @@ interface EarningRecord {
 interface SummaryData {
   users: { total: number; active: number; inactive: number };
   orders: { total: number; totalSales: number };
-  earnings: { pv: number; direct: number; matching: number; total: number };
+  earnings: {
+    pv: number;
+    direct: number;
+    matching: number;
+    sponsorMatching: number; // ✅ new field
+    total: number;
+  };
   recentEarnings: EarningRecord[];
 }
 
@@ -60,11 +66,30 @@ export default function AdminOverview() {
         <Card title="Active Users" value={summary.users.active} />
         <Card title="Inactive Users" value={summary.users.inactive} />
         <Card title="Total Orders" value={summary.orders.total} />
-        <Card title="Total Sales" value={`₹${summary.orders.totalSales.toLocaleString()}`} />
-        <Card title="PV Earnings" value={`₹${summary.earnings.pv.toLocaleString()}`} />
-        <Card title="Direct Income" value={`₹${summary.earnings.direct.toLocaleString()}`} />
-        <Card title="Matching Income" value={`₹${summary.earnings.matching.toLocaleString()}`} />
-        <Card title="Total Earnings" value={`₹${summary.earnings.total.toLocaleString()}`} />
+        <Card
+          title="Total Sales"
+          value={`₹${summary.orders.totalSales.toLocaleString()}`}
+        />
+        <Card
+          title="PV Earnings"
+          value={`₹${summary.earnings.pv.toLocaleString()}`}
+        />
+        <Card
+          title="Direct Income"
+          value={`₹${summary.earnings.direct.toLocaleString()}`}
+        />
+        <Card
+          title="Matching Income"
+          value={`₹${summary.earnings.matching.toLocaleString()}`}
+        />
+        <Card
+          title="Sponsor Matching Income"
+          value={`₹${summary.earnings.sponsorMatching.toLocaleString()}`}
+        /> {/* ✅ NEW */}
+        <Card
+          title="Total Earnings"
+          value={`₹${summary.earnings.total.toLocaleString()}`}
+        />
       </div>
 
       {/* Recent Earnings */}
@@ -85,7 +110,9 @@ export default function AdminOverview() {
                 <td className="px-3 py-2">
                   {r.userId?.name || "Unknown"} ({r.userId?.refCode})
                 </td>
-                <td className="px-3 py-2 capitalize">{r.type}</td>
+                <td className="px-3 py-2 capitalize">
+                  <TypeBadge type={r.type} /> {/* ✅ Styled type */}
+                </td>
                 <td className="px-3 py-2">₹{r.amount.toLocaleString()}</td>
                 <td className="px-3 py-2">
                   {new Date(r.createdAt).toLocaleDateString("en-IN")}
@@ -99,11 +126,38 @@ export default function AdminOverview() {
   );
 }
 
+// -------------------- Reusable Components --------------------
 function Card({ title, value }: { title: string; value: string | number }) {
   return (
     <div className="bg-white border rounded-lg shadow p-4">
       <p className="text-sm text-gray-500">{title}</p>
       <p className="text-xl font-semibold text-green-700 mt-1">{value}</p>
     </div>
+  );
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const styles: Record<string, string> = {
+    pv: "bg-blue-100 text-blue-700",
+    direct: "bg-yellow-100 text-yellow-700",
+    matching: "bg-purple-100 text-purple-700",
+    sponsorMatching: "bg-pink-100 text-pink-700", // ✅ new color
+  };
+
+  const labelMap: Record<string, string> = {
+    pv: "PV",
+    direct: "Direct",
+    matching: "Matching",
+    sponsorMatching: "Sponsor Matching",
+  };
+
+  return (
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${
+        styles[type] || "bg-gray-100 text-gray-700"
+      }`}
+    >
+      {labelMap[type] || type}
+    </span>
   );
 }

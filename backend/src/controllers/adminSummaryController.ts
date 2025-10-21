@@ -22,10 +22,16 @@ export const getAdminSummary = async (req: Request, res: Response) => {
       { $group: { _id: "$type", total: { $sum: "$amount" } } },
     ]);
 
-    const earningsMap: Record<string, number> = { pv: 0, direct: 0, matching: 0 };
+    const earningsMap: Record<string, number> = {
+      pv: 0,
+      direct: 0,
+      matching: 0,
+      sponsorMatching: 0, // ✅ NEW
+    };
+
     allEarnings.forEach((e) => (earningsMap[e._id] = e.total));
 
-    // 🕒 RECENT EARNINGS (joined manually via refCode)
+    // 🕒 RECENT EARNINGS
     const recentEarningsRaw = await EarningRecord.find({})
       .sort({ createdAt: -1 })
       .limit(10)
@@ -64,10 +70,12 @@ export const getAdminSummary = async (req: Request, res: Response) => {
           pv: earningsMap.pv,
           direct: earningsMap.direct,
           matching: earningsMap.matching,
+          sponsorMatching: earningsMap.sponsorMatching, // ✅ NEW
           total:
             (earningsMap.pv || 0) +
             (earningsMap.direct || 0) +
-            (earningsMap.matching || 0),
+            (earningsMap.matching || 0) +
+            (earningsMap.sponsorMatching || 0), // ✅ include new type
         },
         recentEarnings,
       },
