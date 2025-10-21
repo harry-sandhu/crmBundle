@@ -91,7 +91,7 @@ export const signup = async (req: Request, res: Response) => {
         },
         {
           headers: {
-            authorization: process.env.FAST2SMS_API_KEY,
+            authorization: process.env.FAST2SMS_API_KEY_real,
           },
         }
       );
