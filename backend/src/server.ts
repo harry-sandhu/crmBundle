@@ -59,11 +59,9 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // ✅ Connect MongoDB only in runtime (skip during Vercel build)
-if (!process.env.VERCEL) {
-  connectDB();
-} else {
-  console.log("⏭️ Skipping MongoDB connection during Vercel build.");
-}
+// ✅ Always connect to DB (works for Vercel + local)
+connectDB();
+
 
 // ✅ Test Route
 app.get("/", (req: Request, res: Response) => {
