@@ -10,7 +10,7 @@ type Member = {
   isVerified: boolean;
   refCode: string;
   referredBy: string | null;
-  regamount: number | null;
+  
   joinedAt: string;
   status: "active" | "inactive";
 };
@@ -231,9 +231,7 @@ export default function MembersAll() {
                 <div className="text-xs text-gray-500 mt-1">
                   Ref: {m.refCode}
                   {m.referredBy ? ` • Parent: ${m.referredBy}` : ""}
-                  {typeof m.regamount === "number"
-                    ? ` • Reg ₹${m.regamount}`
-                    : ""}
+                 
                 </div>
               </li>
             ))}
@@ -291,9 +289,7 @@ export default function MembersAll() {
           <div className="mt-2 text-xs text-gray-600">
             RefCode: {hover.member.refCode}
             {hover.member.referredBy ? ` • Parent: ${hover.member.referredBy}` : ""}
-            {typeof hover.member.regamount === "number"
-              ? ` • Reg ₹${hover.member.regamount}`
-              : ""}
+            
           </div>
           <div className="mt-3 flex justify-end">
             <button className="text-sm text-gray-600 hover:text-gray-900" onClick={hideCard}>

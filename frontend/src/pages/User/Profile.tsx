@@ -13,7 +13,7 @@ type UserProfile = {
   refCode: string;
   referredBy?: string | null;
   referrerName?: string | null;
-  regamount?: number | null;
+ 
   createdAt?: string | null;
   ancestors?: string[];
 };
@@ -102,12 +102,7 @@ export default function Profile() {
         <InfoCard label="My Sponsor ID" value={profile.refCode} mono />
         <InfoCard label="Referred By (ID)" value={profile.referredBy || "—"} mono />
         <InfoCard label="Referrer Name" value={profile.referrerName || "—"} />
-        <InfoCard
-          label="Registration Amount"
-          value={
-            profile.regamount != null ? `₹${profile.regamount.toLocaleString()}` : "—"
-          }
-        />
+        
         <InfoCard label="Joined On" value={joined} />
       </div>
 

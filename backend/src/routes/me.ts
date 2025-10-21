@@ -87,7 +87,7 @@ router.get("/profile", verifyToken, async (req: Request, res: Response) => {
 
     // Fetch current user (exclude password implicitly)
     const me = await User.findById(userId)
-      .select("name email phone isVerified refCode referredBy ancestors regamount createdAt")
+      .select("name email phone isVerified refCode referredBy ancestors  createdAt")
       .lean();
     if (!me) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -113,7 +113,7 @@ router.get("/profile", verifyToken, async (req: Request, res: Response) => {
         referredBy: me.referredBy ?? null,
         referrerName,                 // NEW
         ancestors: me.ancestors ?? [],
-        regamount: me.regamount ?? null,
+       
         createdAt: me.createdAt ?? null,
       },
     });

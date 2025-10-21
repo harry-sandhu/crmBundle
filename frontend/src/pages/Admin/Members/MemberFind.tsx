@@ -10,7 +10,7 @@ type MemberLite = {
   phone: string | null;
   refCode: string;
   isVerified: boolean;
-  regamount: number | null;
+ 
   referredBy: string | null;
   createdAt: string;
 };
@@ -218,7 +218,7 @@ export default function MemberFind() {
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <Info label="Ref Code" value={selected.refCode} />
                 <Info label="Referred By" value={selected.referredBy ?? "—"} />
-                <Info label="Reg Amount" value={typeof selected.regamount === "number" ? `₹${selected.regamount}` : "—"} />
+                
                 <Info label="Member ID" value={selected.id} />
               </div>
             </div>

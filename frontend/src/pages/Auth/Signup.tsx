@@ -13,7 +13,7 @@ interface SignupResponse {
     refCode: string;
     referredBy?: string | null;
     ancestors?: string[];
-    regamount?: number;
+    
   };
 }
 
@@ -23,7 +23,7 @@ export default function Signup() {
   const [mobile, setMobile] = useState("");
   const [referenceId, setReferenceId] = useState("");
   const [password, setPassword] = useState("");
-  // const [regamount, setRegAmount] = useState<number | "">("");
+  
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,12 +67,7 @@ export default function Signup() {
       return;
     }
 
-    // ⚙️ Validate amount
-    // if (!regamount || regamount <= 0) {
-    //   setErr("Please enter a valid registration amount.");
-    //   setLoading(false);
-    //   return;
-    // }
+    
 
     try {
       const res = await axios.post<SignupResponse>("/auth/signup", {
@@ -81,7 +76,7 @@ export default function Signup() {
         phone: mobile,
         password,
         referralCode: referenceId,
-        // regamount,
+        
       });
 
       if (res.data.success && res.data.data) {
@@ -94,7 +89,7 @@ export default function Signup() {
             email,
             name,
             refCode,
-            // regamount,
+            
           })
         );
 
@@ -160,17 +155,7 @@ export default function Signup() {
             className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
           />
 
-          {/* ✅ Registration Amount Field */}
-          {/* <input
-            type="number"
-            required
-            value={regamount}
-            onChange={(e) =>
-              setRegAmount(e.target.value === "" ? "" : Number(e.target.value))
-            }
-            placeholder="Registration Amount"
-            className="block px-4 py-3 w-full rounded-lg border border-green-200 focus:ring-2 focus:ring-yellow-400"
-          /> */}
+          
 
           {/* ✅ Referral Code Field (auto-filled if ?ref= provided) */}
           <input

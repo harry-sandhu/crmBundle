@@ -10,7 +10,7 @@ export interface IUser extends Document {
   refCode: string;              // unique referral code
   referredBy?: string | null;   // sponsor's refCode
   ancestors?: string[];         // all ancestors up to root
-  // regamount: number;
+ 
   active: boolean;
 
   // 🧩 new: binary MLM position under sponsor
@@ -43,8 +43,8 @@ const UserSchema = new Schema<IUser>(
     referredBy: { type: String, default: null, index: true },
     ancestors: [{ type: String, index: true }],
 
-    // regamount: { type: Number,  },
-    // active: { type: Boolean, default: false, index: true },
+    
+     active: { type: Boolean, default: false, index: true },
 
     // 🧩 binary MLM field
     position: {
