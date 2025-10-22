@@ -10,7 +10,7 @@ type Member = {
   isVerified: boolean;
   refCode: string;
   referredBy: string | null;
-  
+  position: "left" | "right"; // ✅ added
   joinedAt: string;
   status: "active" | "inactive";
 };
@@ -55,7 +55,7 @@ export default function MembersAll() {
   });
   const boxRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch members (server-side search + pagination)
+  // 🧲 Fetch members
   useEffect(() => {
     let cancel = false;
     (async () => {
@@ -92,7 +92,6 @@ export default function MembersAll() {
     };
   }, [q, page, limit]);
 
-  // Optional client refinement
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return data;
@@ -110,7 +109,7 @@ export default function MembersAll() {
     setPage(1);
   }
 
-  // Toggle hover card
+  // Hover card
   function toggleCard(e: React.MouseEvent, m: Member) {
     const offset = 12;
     setHover((h) => {
@@ -120,27 +119,9 @@ export default function MembersAll() {
         : { visible: true, x: e.clientX + offset, y: e.clientY + offset, member: m };
     });
   }
-
   function hideCard() {
     setHover({ visible: false, x: 0, y: 0, member: null });
   }
-
-  // Close card events
-  useEffect(() => {
-    function onEsc(ev: KeyboardEvent) {
-      if (ev.key === "Escape") hideCard();
-    }
-    function onDocClick(ev: MouseEvent) {
-      if (!boxRef.current) return;
-      if (!boxRef.current.contains(ev.target as Node)) hideCard();
-    }
-    document.addEventListener("keydown", onEsc);
-    document.addEventListener("mousedown", onDocClick);
-    return () => {
-      document.removeEventListener("keydown", onEsc);
-      document.removeEventListener("mousedown", onDocClick);
-    };
-  }, []);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -168,6 +149,24 @@ export default function MembersAll() {
     }
   };
 
+  // 🧩 Toggle Left / Right Position
+  const handleTogglePosition = async (m: Member) => {
+    const newPosition = m.position === "left" ? "right" : "left";
+    try {
+      await api.patch(`/api/users/${m.refCode}/position`, {
+        position: newPosition,
+      });
+      setData((prev) =>
+        prev.map((u) =>
+          u.id === m.id ? { ...u, position: newPosition } : u
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update user position:", error);
+      alert("Failed to update position. Please try again.");
+    }
+  };
+
   return (
     <div className="relative">
       {/* Controls */}
@@ -185,7 +184,7 @@ export default function MembersAll() {
 
       {err && <div className="text-red-600 mb-3">{err}</div>}
 
-      {/* Scrollable list */}
+      {/* List */}
       <div
         ref={boxRef}
         className="border rounded bg-white"
@@ -209,7 +208,7 @@ export default function MembersAll() {
                     <div className="text-sm text-gray-600">{m.email}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    {/* ✅ Toggle Active/Inactive Button */}
+                    {/* ✅ Toggle Active */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -223,6 +222,22 @@ export default function MembersAll() {
                     >
                       {m.status === "active" ? "Active" : "Inactive"}
                     </button>
+
+                    {/* 🧩 Toggle Left / Right */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTogglePosition(m);
+                      }}
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        m.position === "left"
+                          ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          : "bg-pink-100 text-pink-700 hover:bg-pink-200"
+                      }`}
+                    >
+                      {m.position === "left" ? "Left" : "Right"}
+                    </button>
+
                     <span className="text-xs text-gray-500">
                       Joined {new Date(m.joinedAt).toLocaleDateString()}
                     </span>
@@ -231,7 +246,6 @@ export default function MembersAll() {
                 <div className="text-xs text-gray-500 mt-1">
                   Ref: {m.refCode}
                   {m.referredBy ? ` • Parent: ${m.referredBy}` : ""}
-                 
                 </div>
               </li>
             ))}
@@ -260,7 +274,7 @@ export default function MembersAll() {
         </button>
       </div>
 
-      {/* Hover Profile Card */}
+      {/* Hover Card */}
       {hover.visible && hover.member && (
         <div
           className="fixed z-50 w-80 rounded-lg border bg-white shadow-lg p-3"
@@ -282,17 +296,25 @@ export default function MembersAll() {
             >
               {hover.member.status}
             </span>
-            <span className="text-xs text-gray-500">
-              Joined {new Date(hover.member.joinedAt).toLocaleDateString()}
+            <span
+              className={`px-2 py-1 rounded text-xs ${
+                hover.member.position === "left"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-pink-100 text-pink-700"
+              }`}
+            >
+              {hover.member.position.toUpperCase()}
             </span>
           </div>
           <div className="mt-2 text-xs text-gray-600">
             RefCode: {hover.member.refCode}
             {hover.member.referredBy ? ` • Parent: ${hover.member.referredBy}` : ""}
-            
           </div>
           <div className="mt-3 flex justify-end">
-            <button className="text-sm text-gray-600 hover:text-gray-900" onClick={hideCard}>
+            <button
+              className="text-sm text-gray-600 hover:text-gray-900"
+              onClick={hideCard}
+            >
               Close
             </button>
           </div>

@@ -1,10 +1,10 @@
-import express from "express";
-import { assignPosition } from "../controllers/adminPositionController";
-// import { verifyAdmin } from "../middleware/auth"; // optional later
+import { Router } from "express";
+import { verifyToken } from "../middleware/authMiddleware";
+import { updateUserPosition } from "../controllers/adminPositionController";
 
-const router = express.Router();
+const router = Router();
 
-// router.post("/assign-position", verifyAdmin, assignPosition);
-router.post("/assign-position", assignPosition);
+// ✅ This route matches your frontend call
+router.patch("/users/:refCode/position", verifyToken, updateUserPosition);
 
 export default router;

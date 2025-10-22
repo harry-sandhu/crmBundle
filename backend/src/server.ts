@@ -27,8 +27,8 @@ import adminProductsUpload from "./routes/AdminProductUpload";
 import adminOrders from "./routes/AdminOrderRoutes";
 import adminProductConfigure from "./routes/adminProductsConfigure";
 import adminSummaryRoutes from "./routes/adminSummaryRoutes";
-import adminPositionRoutes from "./routes/adminPositionRoutes";
-
+import userRoutes from "./routes/userRoutes"
+import adminPositionRoute from "./routes/adminPositionRoutes"
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -70,6 +70,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // ✅ Routes
 app.use("/auth", authRoutes);
+app.use("/api",userRoutes);
 app.use("/api", treeRoutes);
 app.use("/api/me", meRoutes);
 app.use("/api", orderRoutes);
@@ -81,11 +82,12 @@ app.use("/", adminMemberSearch);
 app.use("/", adminMemberDetail);
 app.use("/api", adminProducts);
 app.use("/api", productsPublic);
-app.use("/api/admin", adminPositionRoutes);
+
 app.use("/api", adminSummaryRoutes);
 app.use("/api", adminProductsUpload);
 app.use("/api", adminProductConfigure);
 app.use("/api", adminOrders);
+app.use("/api",adminPositionRoute);
 
 // ✅ Static file serving
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
